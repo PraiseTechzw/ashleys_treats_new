@@ -25,7 +25,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -35,13 +35,14 @@ class _CartScreenState extends ConsumerState<CartScreen>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     _fadeController.forward();
     _slideController.forward();
@@ -57,9 +58,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
   void _navigateToCheckout() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CheckoutScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const CheckoutScreen()),
     );
   }
 
@@ -74,7 +73,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
           children: [
             // Enhanced Header
             _buildHeader(),
-            
+
             // Cart content
             Expanded(
               child: cartState.isEmpty
@@ -83,8 +82,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
             ),
 
             // Enhanced Checkout section
-            if (cartState.isNotEmpty)
-              _buildCheckoutSection(cartState),
+            if (cartState.isNotEmpty) _buildCheckoutSection(cartState),
           ],
         ),
       ),
@@ -227,17 +225,11 @@ class _CartScreenState extends ConsumerState<CartScreen>
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppColors.primary.withOpacity(0.2),
-                ),
+                border: Border.all(color: AppColors.primary.withOpacity(0.2)),
               ),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.cake_rounded,
-                    color: AppColors.primary,
-                    size: 48,
-                  ),
+                  Icon(Icons.cake_rounded, color: AppColors.primary, size: 48),
                   const SizedBox(height: 16),
                   Text(
                     'Ready to order?',
@@ -289,10 +281,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.surface,
-            AppColors.surface.withOpacity(0.95),
-          ],
+          colors: [AppColors.surface, AppColors.surface.withOpacity(0.95)],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
@@ -334,10 +323,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
               child: item.imageUrl != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.asset(
-                        item.imageUrl!,
-                        fit: BoxFit.cover,
-                      ),
+                      child: Image.asset(item.imageUrl!, fit: BoxFit.cover),
                     )
                   : Icon(
                       Icons.cake_rounded,
@@ -364,7 +350,10 @@ class _CartScreenState extends ConsumerState<CartScreen>
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -401,18 +390,27 @@ class _CartScreenState extends ConsumerState<CartScreen>
                       icon: Icons.remove_rounded,
                       onTap: () {
                         if (item.quantity > 1) {
-                          ref.read(cartProvider.notifier).updateQuantity(
+                          ref
+                              .read(cartProvider.notifier)
+                              .updateQuantity(
                                 item.productId,
                                 item.quantity - 1,
                               );
                         } else {
-                          ref.read(cartProvider.notifier).removeItem(item.productId);
+                          ref
+                              .read(cartProvider.notifier)
+                              .removeItem(item.productId);
                         }
                       },
-                      color: item.quantity > 1 ? AppColors.primary : AppColors.secondary.withOpacity(0.3),
+                      color: item.quantity > 1
+                          ? AppColors.primary
+                          : AppColors.secondary.withOpacity(0.3),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       margin: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withOpacity(0.1),
@@ -433,10 +431,9 @@ class _CartScreenState extends ConsumerState<CartScreen>
                     _buildQuantityButton(
                       icon: Icons.add_rounded,
                       onTap: () {
-                        ref.read(cartProvider.notifier).updateQuantity(
-                              item.productId,
-                              item.quantity + 1,
-                            );
+                        ref
+                            .read(cartProvider.notifier)
+                            .updateQuantity(item.productId, item.quantity + 1);
                       },
                       color: AppColors.primary,
                     ),
@@ -444,7 +441,10 @@ class _CartScreenState extends ConsumerState<CartScreen>
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -487,16 +487,9 @@ class _CartScreenState extends ConsumerState<CartScreen>
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: color.withOpacity(0.3),
-            width: 1,
-          ),
+          border: Border.all(color: color.withOpacity(0.3), width: 1),
         ),
-        child: Icon(
-          icon,
-          color: color,
-          size: 20,
-        ),
+        child: Icon(icon, color: color, size: 20),
       ),
     );
   }
@@ -512,10 +505,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                AppColors.surface,
-                AppColors.surface.withOpacity(0.95),
-              ],
+              colors: [AppColors.surface, AppColors.surface.withOpacity(0.95)],
             ),
             boxShadow: [
               BoxShadow(
@@ -583,7 +573,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
 
                 // Checkout button
@@ -604,10 +594,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.shopping_cart_checkout_rounded,
-                          size: 24,
-                        ),
+                        Icon(Icons.shopping_cart_checkout_rounded, size: 24),
                         const SizedBox(width: 12),
                         Text(
                           'Proceed to Checkout',
@@ -631,7 +618,8 @@ class _CartScreenState extends ConsumerState<CartScreen>
                         onPressed: () {
                           showDialog(
                             context: context,
-                            builder: (dialogContext) => _buildClearCartDialog(dialogContext),
+                            builder: (dialogContext) =>
+                                _buildClearCartDialog(dialogContext),
                           );
                         },
                         style: OutlinedButton.styleFrom(
@@ -642,10 +630,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        icon: Icon(
-                          Icons.delete_sweep_rounded,
-                          size: 20,
-                        ),
+                        icon: Icon(Icons.delete_sweep_rounded, size: 20),
                         label: Text(
                           'Clear Cart',
                           style: AppTheme.buttonTextStyle.copyWith(
@@ -664,16 +649,15 @@ class _CartScreenState extends ConsumerState<CartScreen>
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primary,
-                          side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+                          side: BorderSide(
+                            color: AppColors.primary.withOpacity(0.5),
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        icon: Icon(
-                          Icons.add_shopping_cart_rounded,
-                          size: 20,
-                        ),
+                        icon: Icon(Icons.add_shopping_cart_rounded, size: 20),
                         label: Text(
                           'Continue Shopping',
                           style: AppTheme.buttonTextStyle.copyWith(
@@ -695,9 +679,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
 
   Widget _buildClearCartDialog(BuildContext dialogContext) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Row(
         children: [
           Container(
@@ -743,10 +725,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
           onPressed: () {
             ref.read(cartProvider.notifier).clearCart();
             Navigator.pop(dialogContext);
-            ToastManager.showSuccess(
-              context,
-              'Cart cleared successfully!',
-            );
+            ToastManager.showSuccess(context, 'Cart cleared successfully!');
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red,
@@ -757,9 +736,7 @@ class _CartScreenState extends ConsumerState<CartScreen>
           ),
           child: Text(
             'Clear',
-            style: AppTheme.buttonTextStyle.copyWith(
-              color: Colors.white,
-            ),
+            style: AppTheme.buttonTextStyle.copyWith(color: Colors.white),
           ),
         ),
       ],
