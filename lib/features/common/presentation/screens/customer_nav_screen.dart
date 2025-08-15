@@ -8,6 +8,7 @@ import '../../../orders/presentation/screens/order_history_screen.dart';
 import '../../../search/presentation/screens/search_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../cart/presentation/providers/cart_provider.dart';
 
 class CustomerNavScreen extends ConsumerStatefulWidget {
   const CustomerNavScreen({super.key});
@@ -89,6 +90,7 @@ class _CustomerNavScreenState extends ConsumerState<CustomerNavScreen>
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final user = authState.user;
+    final cartState = ref.watch(cartProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -97,7 +99,7 @@ class _CustomerNavScreenState extends ConsumerState<CustomerNavScreen>
         elevation: 0,
         title: Text(
           'Ashley\'s Treats',
-          style: AppTheme.girlishHeadingStyle.copyWith(
+          style: AppTheme.authTitleStyle.copyWith(
             fontSize: 24,
             color: AppColors.primary,
           ),
@@ -166,42 +168,72 @@ class _CustomerNavScreenState extends ConsumerState<CustomerNavScreen>
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                    child: Stack(
                       children: [
-                        AnimatedScale(
-                          scale: isSelected ? 1.2 : 1.0,
-                          duration: const Duration(milliseconds: 200),
-                          child: Icon(
-                            isSelected ? item['activeIcon'] : item['icon'],
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.secondary.withOpacity(0.6),
-                            size: 24,
-                          ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedScale(
+                              scale: isSelected ? 1.2 : 1.0,
+                              duration: const Duration(milliseconds: 200),
+                              child: Icon(
+                                isSelected ? item['activeIcon'] : item['icon'],
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.secondary.withOpacity(0.6),
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 200),
+                              style: AppTheme.elegantBodyStyle.copyWith(
+                                fontSize: 10,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.secondary.withOpacity(0.6),
+                              ),
+                              child: Text(item['label']),
+                            ),
+                            if (isSelected)
+                              Container(
+                                margin: const EdgeInsets.only(top: 4),
+                                width: 4,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 200),
-                          style: AppTheme.elegantBodyStyle.copyWith(
-                            fontSize: 10,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.secondary.withOpacity(0.6),
-                          ),
-                          child: Text(item['label']),
-                        ),
-                        if (isSelected)
-                          Container(
-                            margin: const EdgeInsets.only(top: 4),
-                            width: 4,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(2),
+                        // Cart badge for cart tab
+                        if (index == 3 && cartState.itemCount > 0)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppColors.accent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 20,
+                                minHeight: 20,
+                              ),
+                              child: Text(
+                                '${cartState.itemCount}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
                       ],

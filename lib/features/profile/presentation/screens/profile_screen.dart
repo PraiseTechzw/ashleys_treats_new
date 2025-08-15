@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../splash/presentation/providers/onboarding_provider.dart';
+import '../../../auth/presentation/screens/logout_button.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -15,423 +16,201 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        title: Text(
-          'Profile',
-          style: AppTheme.girlishHeadingStyle.copyWith(
-            fontSize: 22,
-            color: AppColors.secondary,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit, color: AppColors.primary),
-            onPressed: () {
-              // TODO: Implement edit profile functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Edit profile functionality coming soon!'),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Profile Header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.08),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Profile Avatar
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(
-                        color: AppColors.primary.withOpacity(0.3),
-                        width: 3,
-                      ),
-                    ),
-                    child:
-                        user?.displayName != null &&
-                            user!.displayName.isNotEmpty
-                        ? Center(
-                            child: Text(
-                              user.displayName[0].toUpperCase(),
-                              style: AppTheme.girlishHeadingStyle.copyWith(
-                                fontSize: 40,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          )
-                        : Icon(
-                            Icons.person,
-                            size: 50,
-                            color: AppColors.primary,
-                          ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // User Name
-                  Text(
-                    user?.displayName ?? 'User',
-                    style: AppTheme.girlishHeadingStyle.copyWith(
-                      fontSize: 24,
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-
-                  // User Email
-                  Text(
-                    user?.email ?? 'user@example.com',
-                    style: AppTheme.elegantBodyStyle.copyWith(
-                      fontSize: 16,
-                      color: AppColors.secondary.withOpacity(0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // User Role
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      user?.role == 'admin' ? 'Admin' : 'Customer',
-                      style: AppTheme.elegantBodyStyle.copyWith(
-                        fontSize: 12,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Quick Stats
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard(
-                    'Orders',
-                    '12',
-                    Icons.receipt_long,
-                    AppColors.primary,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Profile header
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.primary.withOpacity(0.1),
+                      AppColors.background,
+                    ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildStatCard(
-                    'Favorites',
-                    '8',
-                    Icons.favorite,
-                    AppColors.accent,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildStatCard(
-                    'Reviews',
-                    '5',
-                    Icons.star,
-                    AppColors.secondary,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // Menu Items
-            _buildMenuSection('Account', [
-              _buildMenuItem('Personal Information', Icons.person_outline, () {
-                // TODO: Navigate to personal info
-              }),
-              _buildMenuItem('Addresses', Icons.location_on_outlined, () {
-                // TODO: Navigate to addresses
-              }),
-              _buildMenuItem('Payment Methods', Icons.payment, () {
-                // TODO: Navigate to payment methods
-              }),
-            ]),
-
-            const SizedBox(height: 24),
-
-            _buildMenuSection('Preferences', [
-              _buildMenuItem('Notifications', Icons.notifications_outlined, () {
-                // TODO: Navigate to notifications
-              }),
-              _buildMenuItem('Language', Icons.language, () {
-                // TODO: Navigate to language settings
-              }),
-              _buildMenuItem('Theme', Icons.palette_outlined, () {
-                // TODO: Navigate to theme settings
-              }),
-            ]),
-
-            const SizedBox(height: 24),
-
-            _buildMenuSection('Support', [
-              _buildMenuItem('Help Center', Icons.help_outline, () {
-                // TODO: Navigate to help center
-              }),
-              _buildMenuItem('Contact Us', Icons.contact_support_outlined, () {
-                // TODO: Navigate to contact
-              }),
-              _buildMenuItem('About App', Icons.info_outline, () {
-                // TODO: Navigate to about
-              }),
-              _buildMenuItem(
-                'Show Onboarding Again',
-                Icons.school_outlined,
-                () {
-                  _showOnboardingResetDialog(context, ref);
-                },
-              ),
-            ]),
-
-            const SizedBox(height: 24),
-
-            // Logout Button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {
-                  ref.read(authProvider.notifier).logout();
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.accent,
-                  side: BorderSide(color: AppColors.accent),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
                   children: [
-                    Icon(Icons.logout, size: 20),
-                    const SizedBox(width: 8),
+                    // Profile avatar
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(60),
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.3),
+                          width: 3,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.person,
+                        color: AppColors.primary,
+                        size: 60,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // User name
                     Text(
-                      'Logout',
-                      style: AppTheme.buttonTextStyle.copyWith(
+                      user?.displayName ?? 'Sweet Friend',
+                      style: AppTheme.authTitleStyle.copyWith(
+                        fontSize: 28,
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // User email
+                    Text(
+                      user?.email ?? 'No email available',
+                      style: AppTheme.elegantBodyStyle.copyWith(
                         fontSize: 16,
-                        color: AppColors.accent,
+                        color: AppColors.secondary.withOpacity(0.7),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
 
-            const SizedBox(height: 24),
-
-            // App Version
-            Center(
-              child: Text(
-                'Ashley\'s Treats v1.0.0',
-                style: AppTheme.elegantBodyStyle.copyWith(
-                  fontSize: 12,
-                  color: AppColors.secondary.withOpacity(0.5),
+              // Profile options
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildProfileOption(
+                      icon: Icons.person_outline,
+                      title: 'Edit Profile',
+                      subtitle: 'Update your personal information',
+                      onTap: () {
+                        // TODO: Navigate to edit profile
+                      },
+                    ),
+                    _buildProfileOption(
+                      icon: Icons.location_on_outlined,
+                      title: 'Delivery Address',
+                      subtitle: 'Manage your delivery locations',
+                      onTap: () {
+                        // TODO: Navigate to address management
+                      },
+                    ),
+                    _buildProfileOption(
+                      icon: Icons.payment_outlined,
+                      title: 'Payment Methods',
+                      subtitle: 'Manage your payment options',
+                      onTap: () {
+                        // TODO: Navigate to payment methods
+                      },
+                    ),
+                    _buildProfileOption(
+                      icon: Icons.notifications_outlined,
+                      title: 'Notifications',
+                      subtitle: 'Customize your notification preferences',
+                      onTap: () {
+                        // TODO: Navigate to notification settings
+                      },
+                    ),
+                    _buildProfileOption(
+                      icon: Icons.security_outlined,
+                      title: 'Privacy & Security',
+                      subtitle: 'Manage your account security',
+                      onTap: () {
+                        // TODO: Navigate to privacy settings
+                      },
+                    ),
+                    _buildProfileOption(
+                      icon: Icons.help_outline,
+                      title: 'Help & Support',
+                      subtitle: 'Get help and contact support',
+                      onTap: () {
+                        // TODO: Navigate to help section
+                      },
+                    ),
+                    _buildProfileOption(
+                      icon: Icons.info_outline,
+                      title: 'About',
+                      subtitle: 'Learn more about Ashley\'s Treats',
+                      onTap: () {
+                        // TODO: Navigate to about section
+                      },
+                    ),
+                  ],
                 ),
               ),
-            ),
 
-            const SizedBox(height: 32),
-          ],
+              // Logout section
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const Divider(height: 32),
+                    const LogoutButton(),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildStatCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
+  Widget _buildProfileOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.08),
+            color: AppColors.primary.withOpacity(0.05),
             blurRadius: 10,
-            offset: const Offset(0, 5),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Icon(icon, color: color, size: 24),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: AppTheme.girlishHeadingStyle.copyWith(
-              fontSize: 24,
-              color: color,
-            ),
-          ),
-          Text(
-            title,
-            style: AppTheme.elegantBodyStyle.copyWith(
-              fontSize: 12,
-              color: AppColors.secondary.withOpacity(0.7),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMenuSection(String title, List<Widget> items) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+          child: Icon(icon, color: AppColors.primary, size: 24),
+        ),
+        title: Text(
           title,
-          style: AppTheme.girlishHeadingStyle.copyWith(
-            fontSize: 18,
+          style: AppTheme.elegantBodyStyle.copyWith(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
             color: AppColors.secondary,
           ),
         ),
-        const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
+        subtitle: Text(
+          subtitle,
+          style: AppTheme.elegantBodyStyle.copyWith(
+            fontSize: 14,
+            color: AppColors.secondary.withOpacity(0.7),
           ),
-          child: Column(children: items),
         ),
-      ],
-    );
-  }
-
-  Widget _buildMenuItem(String title, IconData icon, VoidCallback onTap) {
-    return ListTile(
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: AppColors.secondary.withOpacity(0.5),
         ),
-        child: Icon(icon, color: AppColors.primary, size: 20),
+        onTap: onTap,
       ),
-      title: Text(
-        title,
-        style: AppTheme.elegantBodyStyle.copyWith(
-          fontSize: 16,
-          color: AppColors.secondary,
-        ),
-      ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: AppColors.secondary.withOpacity(0.5),
-      ),
-      onTap: onTap,
-    );
-  }
-
-  void _showOnboardingResetDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Show Onboarding Again',
-            style: AppTheme.girlishHeadingStyle.copyWith(
-              fontSize: 20,
-              color: AppColors.secondary,
-            ),
-          ),
-          content: Text(
-            'This will reset the onboarding experience. You\'ll see the welcome screens again on the next app launch.',
-            style: AppTheme.elegantBodyStyle.copyWith(
-              fontSize: 14,
-              color: AppColors.secondary.withOpacity(0.8),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Cancel',
-                style: AppTheme.buttonTextStyle.copyWith(
-                  color: AppColors.secondary.withOpacity(0.7),
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                // Reset onboarding
-                await ref.read(onboardingProvider.notifier).resetOnboarding();
-                // Navigate to onboarding
-                if (context.mounted) {
-                  Navigator.of(context).pushReplacementNamed('/onboarding');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
-              ),
-              child: Text(
-                'Reset',
-                style: AppTheme.buttonTextStyle.copyWith(
-                  color: AppColors.onPrimary,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }

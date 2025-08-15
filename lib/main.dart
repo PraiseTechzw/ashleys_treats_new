@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'services/firebase/firebase_service.dart';
+import 'core/utils/demo_data_seeder.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/auth/presentation/screens/forgot_password_screen.dart';
@@ -13,8 +14,13 @@ import 'core/widgets/app_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   // Initialize Firebase and FCM
   await FirebaseService().init();
+
+  // Seed demo data
+  await DemoDataSeeder.seedDemoData();
+
   // Initialize Isar (singleton, lazy)
   runApp(const ProviderScope(child: AshleyTreatsApp()));
 }

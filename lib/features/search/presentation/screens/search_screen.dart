@@ -1,460 +1,366 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../products/presentation/providers/product_provider.dart';
+import '../../../products/data/models/product_model.dart';
+import '../../../cart/presentation/providers/cart_provider.dart';
+import '../../../../core/widgets/custom_toast.dart';
 
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
-  final TextEditingController _controller = TextEditingController();
-  bool _isLoading = false;
-  List<Map<String, dynamic>> _results = [];
-  String _query = '';
+class _SearchScreenState extends ConsumerState<SearchScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  List<ProductModel> _searchResults = [];
+  bool _isSearching = false;
 
-  // Mock product data
-  final List<Map<String, dynamic>> _products = [
-    {
-      'name': 'Rainbow Cupcake',
-      'price': 4.50,
-      'type': 'cupcake',
-      'category': 'Cupcakes',
-    },
-    {
-      'name': 'Chocolate Brownie',
-      'price': 4.00,
-      'type': 'brownie',
-      'category': 'Brownies',
-    },
-    {
-      'name': 'Chocolate Chip Cookie',
-      'price': 2.50,
-      'type': 'cookie',
-      'category': 'Cookies',
-    },
-    {
-      'name': 'Vanilla Cake Slice',
-      'price': 5.00,
-      'type': 'cake',
-      'category': 'Cake Slices',
-    },
-    {
-      'name': 'Strawberry Cupcake',
-      'price': 4.00,
-      'type': 'cupcake',
-      'category': 'Cupcakes',
-    },
-    {
-      'name': 'Red Velvet Cake Pop',
-      'price': 3.50,
-      'type': 'cake',
-      'category': 'Cake Pops',
-    },
-    {
-      'name': 'Glazed Donut',
-      'price': 3.20,
-      'type': 'donut',
-      'category': 'Donuts',
-    },
-    {
-      'name': 'Blueberry Muffin',
-      'price': 3.50,
-      'type': 'muffin',
-      'category': 'Muffins',
-    },
-    {
-      'name': 'Carrot Cake Slice',
-      'price': 5.50,
-      'type': 'cake',
-      'category': 'Cake Slices',
-    },
-    {
-      'name': 'Sausage Roll',
-      'price': 3.20,
-      'type': 'savory',
-      'category': 'Savory',
-    },
-  ];
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
-  void _onSearchChanged(String value) async {
-    setState(() {
-      _isLoading = true;
-      _query = value;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 400)); // Simulate loading
-
-    if (value.isEmpty) {
+  void _performSearch(String query) {
+    if (query.trim().isEmpty) {
       setState(() {
-        _results = [];
-        _isLoading = false;
+        _searchResults = [];
+        _isSearching = false;
       });
       return;
     }
 
-    final results = _products
-        .where(
-          (p) =>
-              p['name'].toLowerCase().contains(value.toLowerCase()) ||
-              p['category'].toLowerCase().contains(value.toLowerCase()),
-        )
-        .toList();
+    setState(() {
+      _isSearching = true;
+    });
+
+    final allProducts = ref.read(productProvider).products;
+    final results = allProducts.where((product) {
+      final searchQuery = query.toLowerCase();
+      return product.name.toLowerCase().contains(searchQuery) ||
+          product.description.toLowerCase().contains(searchQuery) ||
+          product.category.toLowerCase().contains(searchQuery);
+    }).toList();
 
     setState(() {
-      _results = results;
-      _isLoading = false;
+      _searchResults = results;
+      _isSearching = false;
     });
   }
 
-  void _onCategoryTap(String category) {
-    setState(() {
-      _query = category;
-      _controller.text = category;
-    });
-    _onSearchChanged(category);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void _addToCart(ProductModel product) {
+    ref.read(cartProvider.notifier).addItem(product);
+    ToastManager.showSuccess(
+      context,
+      '${product.name} added to cart!',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final productState = ref.watch(productProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        title: Text(
-          'Search',
-          style: AppTheme.girlishHeadingStyle.copyWith(
-            fontSize: 22,
-            color: AppColors.secondary,
-          ),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SafeArea(
         child: Column(
           children: [
-            // Search Bar
-            TextField(
-              controller: _controller,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Search for treats, sweets, or categories...',
-                prefixIcon: Icon(Icons.search, color: AppColors.primary),
-                suffixIcon: _query.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(
-                          Icons.clear,
-                          color: AppColors.secondary.withOpacity(0.6),
+            // Search header
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.search,
+                        color: AppColors.primary,
+                        size: 28,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Search Treats',
+                        style: AppTheme.authTitleStyle.copyWith(
+                          fontSize: 24,
+                          color: AppColors.secondary,
                         ),
-                        onPressed: () {
-                          _controller.clear();
-                          _onSearchChanged('');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: AppColors.primary, width: 2),
-                ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Search bar
+                  TextField(
+                    controller: _searchController,
+                    onChanged: _performSearch,
+                    decoration: InputDecoration(
+                      hintText: 'Search for cupcakes, cookies, cakes...',
+                      prefixIcon: Icon(Icons.search, color: AppColors.primary),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.clear, color: AppColors.secondary),
+                              onPressed: () {
+                                _searchController.clear();
+                                _performSearch('');
+                              },
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: AppColors.primary.withOpacity(0.3)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: AppColors.primary.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: AppColors.surface,
+                    ),
+                  ),
+                ],
               ),
             ),
 
-            const SizedBox(height: 24),
-
-            // Categories
-            if (_query.isEmpty) ...[
-              Text(
-                'Popular Categories',
-                style: AppTheme.girlishHeadingStyle.copyWith(
-                  fontSize: 18,
-                  color: AppColors.secondary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children:
-                    [
-                          'Cupcakes',
-                          'Cake Slices',
-                          'Cookies',
-                          'Brownies',
-                          'Donuts',
-                          'Muffins',
-                        ]
-                        .map(
-                          (category) => GestureDetector(
-                            onTap: () => _onCategoryTap(category),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: AppColors.primary.withOpacity(0.3),
-                                ),
-                              ),
-                              child: Text(
-                                category,
-                                style: AppTheme.elegantBodyStyle.copyWith(
-                                  fontSize: 14,
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            // Search Results
-            if (_isLoading)
-              Expanded(
-                child: Center(
-                  child: Lottie.asset(
-                    'assets/animations/loading.json',
-                    width: 80,
-                    height: 80,
-                  ),
-                ),
-              )
-            else if (_query.isEmpty)
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Lottie.asset(
-                        'assets/animations/flavors.json',
-                        width: 120,
-                        height: 120,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Start typing to search for your favorite treats!',
-                        style: AppTheme.elegantBodyStyle.copyWith(
-                          color: AppColors.secondary.withOpacity(0.6),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else if (_results.isEmpty)
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Lottie.asset(
-                        'assets/animations/empty.json',
-                        width: 100,
-                        height: 100,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No results found for "$_query"',
-                        style: AppTheme.elegantBodyStyle.copyWith(
-                          color: AppColors.secondary.withOpacity(0.6),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Try searching for something else',
-                        style: AppTheme.elegantBodyStyle.copyWith(
-                          fontSize: 14,
-                          color: AppColors.secondary.withOpacity(0.5),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${_results.length} results found',
-                      style: AppTheme.elegantBodyStyle.copyWith(
-                        fontSize: 14,
-                        color: AppColors.secondary.withOpacity(0.7),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.8,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                            ),
-                        itemCount: _results.length,
-                        itemBuilder: (context, index) {
-                          final item = _results[index];
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withOpacity(0.08),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const SizedBox(height: 16),
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  child: Icon(
-                                    _getIconForType(item['type']),
-                                    color: AppColors.primary,
-                                    size: 30,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                  ),
-                                  child: Text(
-                                    item['name'],
-                                    style: AppTheme.elegantBodyStyle.copyWith(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.secondary,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  item['category'],
-                                  style: AppTheme.elegantBodyStyle.copyWith(
-                                    fontSize: 12,
-                                    color: AppColors.secondary.withOpacity(0.6),
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  '\$${item['price'].toStringAsFixed(2)}',
-                                  style: AppTheme.elegantBodyStyle.copyWith(
-                                    fontSize: 16,
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      // TODO: Implement add to cart functionality
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            '${item['name']} added to cart!',
-                                          ),
-                                          backgroundColor: AppColors.primary,
-                                        ),
-                                      );
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      minimumSize: const Size.fromHeight(36),
-                                    ),
-                                    child: Text(
-                                      'Add to Cart',
-                                      style: AppTheme.buttonTextStyle.copyWith(
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            // Search results or suggestions
+            Expanded(
+              child: _buildSearchContent(productState),
+            ),
           ],
         ),
       ),
     );
   }
 
-  IconData _getIconForType(String type) {
-    switch (type) {
-      case 'cupcake':
-        return Icons.cake;
-      case 'brownie':
-        return Icons.square;
-      case 'cookie':
-        return Icons.cookie;
-      case 'cake':
-        return Icons.cake_outlined;
-      case 'donut':
-        return Icons.circle;
-      case 'muffin':
-        return Icons.cake_rounded;
-      case 'savory':
-        return Icons.lunch_dining;
-      default:
-        return Icons.cake;
+  Widget _buildSearchContent(ProductState productState) {
+    if (_searchController.text.isEmpty) {
+      return _buildSearchSuggestions(productState);
     }
+
+    if (_isSearching) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Lottie.asset(
+              'assets/animations/loading.json',
+              width: 80,
+              height: 80,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Searching...',
+              style: AppTheme.elegantBodyStyle.copyWith(
+                color: AppColors.secondary.withOpacity(0.7),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_searchResults.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Lottie.asset(
+              'assets/animations/empty.json',
+              width: 150,
+              height: 150,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No results found',
+              style: AppTheme.authTitleStyle.copyWith(
+                fontSize: 20,
+                color: AppColors.secondary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Try searching with different keywords',
+              style: AppTheme.elegantBodyStyle.copyWith(
+                fontSize: 16,
+                color: AppColors.secondary.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _buildSearchResults();
+  }
+
+  Widget _buildSearchSuggestions(ProductState productState) {
+    final categories = ref.watch(categoriesProvider);
+    
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Popular Categories',
+            style: AppTheme.authTitleStyle.copyWith(
+              fontSize: 20,
+              color: AppColors.secondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: categories.map((category) {
+              if (category == 'All') return const SizedBox.shrink();
+              return GestureDetector(
+                onTap: () {
+                  _searchController.text = category;
+                  _performSearch(category);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Text(
+                    category,
+                    style: AppTheme.elegantBodyStyle.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Recent Searches',
+            style: AppTheme.authTitleStyle.copyWith(
+              fontSize: 20,
+              color: AppColors.secondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // You can add recent searches functionality here
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'No recent searches yet',
+              style: AppTheme.elegantBodyStyle.copyWith(
+                color: AppColors.secondary.withOpacity(0.6),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _searchResults.length,
+      itemBuilder: (context, index) {
+        final product = _searchResults[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(16),
+            leading: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: AppColors.cardColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: product.images.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        product.images.first,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Icon(
+                      Icons.cake,
+                      color: AppColors.primary,
+                      size: 30,
+                    ),
+            ),
+            title: Text(
+              product.name,
+              style: AppTheme.elegantBodyStyle.copyWith(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.secondary,
+              ),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  product.category,
+                  style: AppTheme.elegantBodyStyle.copyWith(
+                    fontSize: 14,
+                    color: AppColors.secondary.withOpacity(0.7),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '\$${product.price.toStringAsFixed(2)}',
+                  style: AppTheme.elegantBodyStyle.copyWith(
+                    fontSize: 16,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            trailing: IconButton(
+              onPressed: () => _addToCart(product),
+              icon: Icon(
+                Icons.add_shopping_cart,
+                color: AppColors.primary,
+              ),
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.primary.withOpacity(0.1),
+                padding: const EdgeInsets.all(8),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
