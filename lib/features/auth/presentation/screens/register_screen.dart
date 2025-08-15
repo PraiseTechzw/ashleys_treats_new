@@ -77,10 +77,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
 
     if (cleanNumber.startsWith('07')) {
-      if (cleanNumber.length < 9)
+      if (cleanNumber.length < 9) {
         return 'Zimbabwe mobile number must be 9 digits (07XXXXXXXX)';
-      if (cleanNumber.length > 9)
+      }
+      if (cleanNumber.length > 9) {
         return 'Zimbabwe mobile number must be exactly 9 digits (07XXXXXXXX)';
+      }
       return 'Valid Zimbabwe mobile number';
     } else if (cleanNumber.startsWith('7') && cleanNumber.length == 8) {
       return 'Valid Zimbabwe mobile number (7XXXXXXXX)';

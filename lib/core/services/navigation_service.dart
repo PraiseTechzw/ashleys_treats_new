@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/splash/presentation/providers/onboarding_provider.dart';
 

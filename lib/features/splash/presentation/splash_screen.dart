@@ -1,10 +1,8 @@
-import 'package:ashleys_treats/features/splash/presentation/providers/onboarding_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../auth/presentation/providers/auth_provider.dart';
 import '../../../core/services/navigation_service.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {

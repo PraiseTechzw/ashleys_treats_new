@@ -102,7 +102,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                 child: Column(
                   children: [
                     // Top Section with Animation
-                    Container(
+                    SizedBox(
                       height: isSmallScreen
                           ? screenHeight * 0.45
                           : screenHeight * 0.5,

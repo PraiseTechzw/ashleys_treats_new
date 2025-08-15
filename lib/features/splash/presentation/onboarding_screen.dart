@@ -5,7 +5,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import 'providers/onboarding_provider.dart';
 import '../../../core/services/navigation_service.dart';
-import '../../../core/widgets/debug_onboarding_status.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});

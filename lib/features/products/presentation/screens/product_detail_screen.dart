@@ -251,8 +251,7 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet>
                   // Product details with enhanced styling
                   Expanded(
                     child: SingleChildScrollView(
-                      // Add bottom padding to prevent content from being hidden behind the add to cart button
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
