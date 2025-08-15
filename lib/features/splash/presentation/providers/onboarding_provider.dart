@@ -15,10 +15,21 @@ class OnboardingNotifier extends StateNotifier<bool> {
   }
 
   Future<void> _loadOnboardingStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
-    state = hasSeenOnboarding;
-    print('Onboarding status loaded: $hasSeenOnboarding'); // Debug info
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+      print('Onboarding provider: Loading status from SharedPreferences: $hasSeenOnboarding'); // Debug info
+      
+      if (mounted) {
+        state = hasSeenOnboarding;
+        print('Onboarding provider: State updated to: $state'); // Debug info
+      }
+    } catch (e) {
+      print('Onboarding provider: Error loading status: $e'); // Debug info
+      if (mounted) {
+        state = false; // Default to false on error
+      }
+    }
   }
 
   Future<void> markOnboardingComplete() async {

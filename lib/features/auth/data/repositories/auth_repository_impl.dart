@@ -43,4 +43,9 @@ class AuthRepositoryImpl implements AuthRepository {
     final userModel = await remoteDataSource.getCurrentUser();
     return userModel;
   }
+
+  @override
+  Future<void> forgotPassword({required String email}) async {
+    await remoteDataSource.forgotPassword(email: email);
+  }
 }

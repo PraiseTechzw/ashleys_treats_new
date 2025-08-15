@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/navigation_service.dart';
 import '../../features/splash/presentation/splash_screen.dart';
+import '../../features/splash/presentation/onboarding_screen.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/widgets/auth_wrapper.dart';
+import '../../features/splash/presentation/providers/onboarding_provider.dart';
 
 class AppWrapper extends ConsumerStatefulWidget {
   const AppWrapper({super.key});
@@ -11,27 +15,83 @@ class AppWrapper extends ConsumerStatefulWidget {
 }
 
 class _AppWrapperState extends ConsumerState<AppWrapper> {
+  String? _initialRoute;
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    _checkInitialRoute();
+    _determineInitialRoute();
   }
 
-  Future<void> _checkInitialRoute() async {
-    // Wait a bit for providers to initialize
-    await Future.delayed(const Duration(milliseconds: 100));
+  Future<void> _determineInitialRoute() async {
+    print('AppWrapper: Starting to determine initial route...'); // Debug
+
+    // Wait for the onboarding provider to be ready
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Wait for the onboarding provider to actually load its data
+    bool providerReady = false;
+    int attempts = 0;
+    const maxAttempts = 10;
+
+    while (!providerReady && attempts < maxAttempts && mounted) {
+      final onboardingStatus = ref.read(onboardingProvider);
+      print(
+        'AppWrapper: Attempt $attempts - Onboarding provider status: $onboardingStatus',
+      ); // Debug
+
+      // Check if the provider has actually loaded (not just the default false value)
+      if (onboardingStatus == true || attempts > 5) {
+        // Give it a few attempts
+        providerReady = true;
+        print(
+          'AppWrapper: Provider is ready, status: $onboardingStatus',
+        ); // Debug
+      } else {
+        attempts++;
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    }
 
     if (mounted) {
       final route = await NavigationService.getInitialRoute(ref);
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed(route);
-      }
+      print('AppWrapper: Determined route: $route'); // Debug
+      setState(() {
+        _initialRoute = route;
+        _isLoading = false;
+      });
+      print(
+        'AppWrapper: State updated, _initialRoute: $_initialRoute, _isLoading: $_isLoading',
+      ); // Debug
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Show splash screen while determining initial route
-    return const SplashScreen();
+    print(
+      'AppWrapper: Building with _isLoading: $_isLoading, _initialRoute: $_initialRoute',
+    ); // Debug
+
+    if (_isLoading) {
+      print('AppWrapper: Showing SplashScreen (loading)'); // Debug
+      return const SplashScreen();
+    }
+
+    // Return the appropriate screen based on the determined route
+    switch (_initialRoute) {
+      case '/onboarding':
+        print('AppWrapper: Showing OnboardingScreen'); // Debug
+        return const OnboardingScreen();
+      case '/login':
+        print('AppWrapper: Showing LoginScreen'); // Debug
+        return const LoginScreen();
+      case '/auth':
+        print('AppWrapper: Showing AuthWrapper'); // Debug
+        return const AuthWrapper();
+      default:
+        print('AppWrapper: Showing SplashScreen (fallback)'); // Debug
+        return const SplashScreen(); // Fallback
+    }
   }
 }

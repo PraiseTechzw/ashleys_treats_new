@@ -188,6 +188,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(clearError: true);
   }
 
+  Future<bool> forgotPassword(String email) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+      
+      await _authRepository.forgotPassword(email: email);
+      
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to send password reset email: ${e.toString()}',
+      );
+      return false;
+    }
+  }
+
   bool get isAdmin => state.user?.role == 'admin';
   bool get isCustomer => state.user?.role == 'customer';
 }

@@ -81,6 +81,16 @@ class AuthRemoteDataSource {
     }
   }
 
+  Future<void> forgotPassword({required String email}) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw _handleFirebaseAuthException(e);
+    } catch (e) {
+      throw Exception('Failed to send password reset email: ${e.toString()}');
+    }
+  }
+
   Future<UserModel?> getCurrentUser() async {
     try {
       final user = _firebaseAuth.currentUser;
