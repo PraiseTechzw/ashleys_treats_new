@@ -8,16 +8,22 @@ class NavigationService {
   static Future<String> getInitialRoute(WidgetRef ref) async {
     // Check if user has seen onboarding
     final hasSeenOnboarding = ref.read(onboardingProvider);
+    print('Navigation: hasSeenOnboarding = $hasSeenOnboarding'); // Debug info
     
     if (!hasSeenOnboarding) {
+      print('Navigation: routing to /onboarding'); // Debug info
       return '/onboarding';
     }
     
     // Check if user is authenticated
     final authState = ref.read(authProvider);
+    print('Navigation: isAuthenticated = ${authState.isAuthenticated}'); // Debug info
+    
     if (authState.isAuthenticated) {
+      print('Navigation: routing to /auth'); // Debug info
       return '/auth';
     } else {
+      print('Navigation: routing to /login'); // Debug info
       return '/login';
     }
   }

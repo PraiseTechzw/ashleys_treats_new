@@ -18,17 +18,20 @@ class OnboardingNotifier extends StateNotifier<bool> {
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
     state = hasSeenOnboarding;
+    print('Onboarding status loaded: $hasSeenOnboarding'); // Debug info
   }
 
   Future<void> markOnboardingComplete() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenOnboarding', true);
     state = true;
+    print('Onboarding marked as complete'); // Debug info
   }
 
   Future<void> resetOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenOnboarding', false);
     state = false;
+    print('Onboarding reset'); // Debug info
   }
 }
