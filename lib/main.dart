@@ -7,6 +7,7 @@ import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/auth/presentation/widgets/auth_wrapper.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'features/splash/presentation/onboarding_screen.dart';
+import 'core/services/navigation_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

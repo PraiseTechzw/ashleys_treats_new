@@ -98,7 +98,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     // Mark onboarding as complete
     await ref.read(onboardingProvider.notifier).markOnboardingComplete();
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed('/auth');
+      // Navigate to the appropriate screen based on auth status
+      await NavigationService.navigateToInitialRoute(context, ref);
     }
   }
 
