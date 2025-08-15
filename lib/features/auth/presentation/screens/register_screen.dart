@@ -388,7 +388,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 4.0, left: 12.0),
                     child: Text(
-                      '${_phoneController.text.replaceAll(RegExp(r'[^\d]'), '').length} digits',
+                      _getPhoneCounterText(_phoneController.text),
                       style: TextStyle(color: Colors.grey[600], fontSize: 11),
                     ),
                   ),
