@@ -8,6 +8,7 @@ import '../providers/product_provider.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/product_model.dart';
+import 'product_detail_screen.dart';
 
 class ProductListScreen extends ConsumerStatefulWidget {
   const ProductListScreen({super.key});
@@ -82,7 +83,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _ProductDetailsBottomSheet(
+      builder: (context) => ProductDetailsBottomSheet(
         product: product,
         onAddToCart: () => _addToCart(product),
       ),
@@ -104,8 +105,24 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
           slivers: [
             // Header with greeting
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary.withOpacity(0.1),
+                      AppColors.cardColor.withOpacity(0.2),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -113,59 +130,117 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '${_getGreeting()}, $userName!',
-                            style: AppTheme.girlishHeadingStyle.copyWith(
-                              fontSize: 24,
-                              color: AppColors.secondary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(
-                                Icons.location_on,
-                                color: AppColors.primary,
-                                size: 16,
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  _getGreetingIcon(),
+                                  color: AppColors.primary,
+                                  size: 24,
+                                ),
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Zimbabwe',
-                                style: AppTheme.elegantBodyStyle.copyWith(
-                                  fontSize: 14,
-                                  color: AppColors.secondary.withOpacity(0.7),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  '${_getGreeting()}, $userName!',
+                                  style: AppTheme.girlishHeadingStyle.copyWith(
+                                    fontSize: 24,
+                                    color: AppColors.secondary,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppColors.primary.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.location_on_rounded,
+                                  color: AppColors.primary,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Zimbabwe',
+                                  style: AppTheme.elegantBodyStyle.copyWith(
+                                    fontSize: 14,
+                                    color: AppColors.secondary.withOpacity(0.8),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    // Cart badge
+                    // Enhanced Cart badge
                     Stack(
                       children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: AppColors.primary.withOpacity(0.1),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.primary.withOpacity(0.3),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
                           child: Icon(
-                            Icons.shopping_bag,
+                            Icons.shopping_bag_rounded,
                             color: AppColors.primary,
                             size: 28,
                           ),
                         ),
                         if (cartState.itemCount > 0)
                           Positioned(
-                            right: 0,
-                            top: 0,
+                            right: -2,
+                            top: -2,
                             child: Container(
-                              padding: const EdgeInsets.all(4),
+                              padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: AppColors.accent,
-                                borderRadius: BorderRadius.circular(10),
+                                gradient: LinearGradient(
+                                  colors: [AppColors.accent, AppColors.primary],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.accent.withOpacity(0.4),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                               constraints: const BoxConstraints(
-                                minWidth: 20,
-                                minHeight: 20,
+                                minWidth: 24,
+                                minHeight: 24,
                               ),
                               child: Text(
                                 '${cartState.itemCount}',
@@ -185,78 +260,153 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
               ),
             ),
 
-            // Hero Section
+            // Enhanced Hero Section
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.cardColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(24),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary.withOpacity(0.15),
+                      AppColors.cardColor.withOpacity(0.3),
+                      AppColors.accent.withOpacity(0.1),
+                    ],
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Sweet & Savory Treats\nDelivered to Your Doorstep',
-                                style: AppTheme.girlishHeadingStyle.copyWith(
-                                  fontSize: 22,
-                                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.2),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    Icons.celebration_rounded,
+                                    color: AppColors.primary,
+                                    size: 24,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Order cupcakes, cookies, pies, and more. Fast, fresh, and fabulous delivery!',
-                                style: AppTheme.elegantBodyStyle.copyWith(
-                                  fontSize: 14,
-                                  color: AppColors.secondary.withOpacity(0.7),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Sweet & Savory Treats\nDelivered to Your Doorstep',
+                                    style: AppTheme.girlishHeadingStyle
+                                        .copyWith(
+                                          fontSize: 22,
+                                          color: AppColors.primary,
+                                          height: 1.2,
+                                        ),
+                                  ),
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.local_shipping_rounded,
+                                  color: AppColors.accent,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Order cupcakes, cookies, pies, and more. Fast, fresh, and fabulous delivery!',
+                                    style: AppTheme.elegantBodyStyle.copyWith(
+                                      fontSize: 14,
+                                      color: AppColors.secondary.withOpacity(
+                                        0.8,
+                                      ),
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primary.withOpacity(0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
+                              child: ElevatedButton(
                                 onPressed: () {
                                   // TODO: Navigate to full menu
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
                                   foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
+                                  elevation: 0,
                                 ),
-                                child: Text(
-                                  'Order Now',
-                                  style: AppTheme.buttonTextStyle.copyWith(
-                                    fontSize: 16,
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.shopping_cart_rounded, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Order Now',
+                                      style: AppTheme.buttonTextStyle.copyWith(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Lottie.asset(
-                            'assets/animations/Delivery.json',
-                            height: 120,
-                            fit: BoxFit.contain,
-                          ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Lottie.asset(
+                          'assets/animations/Delivery.json',
+                          height: 140,
+                          fit: BoxFit.contain,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -380,38 +530,96 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
                 ),
               ),
 
-            // Delivery Highlight
+            // Enhanced Delivery Highlight
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
+              child: Container(
+                margin: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 24,
                 ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.accent.withOpacity(0.15),
+                      AppColors.primary.withOpacity(0.1),
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: AppColors.accent.withOpacity(0.3),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.accent.withOpacity(0.1),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
                   child: Row(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: Lottie.asset(
                           'assets/animations/Delivery.json',
                           height: 60,
                           fit: BoxFit.contain,
                         ),
                       ),
+                      const SizedBox(width: 16),
                       Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            'Fast & Fresh Delivery!\nTrack your order in real-time and enjoy every bite.',
-                            style: AppTheme.elegantBodyStyle.copyWith(
-                              fontSize: 14,
-                              color: AppColors.secondary,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.local_shipping_rounded,
+                                  color: AppColors.accent,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Fast & Fresh Delivery!',
+                                  style: AppTheme.girlishHeadingStyle.copyWith(
+                                    fontSize: 16,
+                                    color: AppColors.accent,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Track your order in real-time and enjoy every bite. We ensure your treats arrive fresh and delicious!',
+                              style: AppTheme.elegantBodyStyle.copyWith(
+                                fontSize: 14,
+                                color: AppColors.secondary.withOpacity(0.8),
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.track_changes_rounded,
+                          color: AppColors.accent,
+                          size: 24,
                         ),
                       ),
                     ],
@@ -427,25 +635,101 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
   }
 
   Widget _buildSectionHeader(String title, VoidCallback onAllPressed) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+    IconData getSectionIcon(String title) {
+      switch (title.toLowerCase()) {
+        case 'featured treats':
+          return Icons.star_rounded;
+        case 'categories':
+          return Icons.category_rounded;
+        case 'all cupcakes':
+        case 'all cakes':
+        case 'all cookies':
+        case 'all donuts':
+        case 'all muffins':
+        case 'all brownies':
+        case 'all cake pops':
+          return Icons.cake_rounded;
+        default:
+          return Icons.local_offer_rounded;
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withOpacity(0.1), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: AppTheme.girlishHeadingStyle.copyWith(
-              fontSize: 20,
-              color: AppColors.secondary,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  getSectionIcon(title),
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: AppTheme.girlishHeadingStyle.copyWith(
+                  fontSize: 20,
+                  color: AppColors.secondary,
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: onAllPressed,
-            child: Text(
-              'All',
-              style: AppTheme.elegantBodyStyle.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: TextButton(
+              onPressed: onAllPressed,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'View All',
+                    style: AppTheme.elegantBodyStyle.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.primary,
+                    size: 16,
+                  ),
+                ],
               ),
             ),
           ),
@@ -789,394 +1073,5 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
       default:
         return Icons.cake;
     }
-  }
-}
-
-class _ProductDetailsBottomSheet extends StatelessWidget {
-  final ProductModel product;
-  final VoidCallback onAddToCart;
-
-  const _ProductDetailsBottomSheet({
-    required this.product,
-    required this.onAddToCart,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          // Handle bar
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.secondary.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          // Close button
-          Positioned(
-            top: 16,
-            right: 16,
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Icon(Icons.close, color: AppColors.secondary, size: 20),
-              ),
-            ),
-          ),
-
-          // Product images carousel
-          if (product.images.isNotEmpty)
-            Container(
-              height: 200,
-              margin: const EdgeInsets.all(16),
-              child: PageView.builder(
-                itemCount: product.images.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.asset(
-                        product.images[index],
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            )
-          else
-            Container(
-              height: 200,
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.cardColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(Icons.cake, color: AppColors.primary, size: 80),
-            ),
-
-          // Product details
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Product name and price
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          product.name,
-                          style: AppTheme.girlishHeadingStyle.copyWith(
-                            fontSize: 24,
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        '\$${product.price.toStringAsFixed(2)}',
-                        style: AppTheme.elegantBodyStyle.copyWith(
-                          fontSize: 24,
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Category and availability
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          product.category,
-                          style: AppTheme.elegantBodyStyle.copyWith(
-                            fontSize: 14,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: product.availability
-                              ? Colors.green.withOpacity(0.1)
-                              : Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              product.availability
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              color: product.availability
-                                  ? Colors.green
-                                  : Colors.red,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              product.availability
-                                  ? 'In Stock'
-                                  : 'Out of Stock',
-                              style: AppTheme.elegantBodyStyle.copyWith(
-                                fontSize: 14,
-                                color: product.availability
-                                    ? Colors.green
-                                    : Colors.red,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Description
-                  Text(
-                    'Description',
-                    style: AppTheme.girlishHeadingStyle.copyWith(
-                      fontSize: 18,
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    product.description,
-                    style: AppTheme.elegantBodyStyle.copyWith(
-                      fontSize: 16,
-                      color: AppColors.secondary.withOpacity(0.8),
-                      height: 1.5,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Ingredients
-                  if (product.ingredients.isNotEmpty) ...[
-                    Text(
-                      'Ingredients',
-                      style: AppTheme.girlishHeadingStyle.copyWith(
-                        fontSize: 18,
-                        color: AppColors.secondary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: product.ingredients.map((ingredient) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.cardColor.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: AppColors.cardColor.withOpacity(0.5),
-                            ),
-                          ),
-                          child: Text(
-                            ingredient,
-                            style: AppTheme.elegantBodyStyle.copyWith(
-                              fontSize: 14,
-                              color: AppColors.secondary,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-
-                  // Nutritional info
-                  if (product.nutritionalInfo.isNotEmpty) ...[
-                    Text(
-                      'Nutritional Information',
-                      style: AppTheme.girlishHeadingStyle.copyWith(
-                        fontSize: 18,
-                        color: AppColors.secondary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.cardColor.withOpacity(0.3),
-                        ),
-                      ),
-                      child: Column(
-                        children: product.nutritionalInfo.entries.map((entry) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  entry.key.replaceAll('_', ' ').toUpperCase(),
-                                  style: AppTheme.elegantBodyStyle.copyWith(
-                                    fontSize: 14,
-                                    color: AppColors.secondary.withOpacity(0.7),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  '${entry.value}',
-                                  style: AppTheme.elegantBodyStyle.copyWith(
-                                    fontSize: 14,
-                                    color: AppColors.secondary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-
-                  // Stock quantity
-                  if (product.stockQuantity > 0) ...[
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.accent.withOpacity(0.3),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.inventory_2,
-                            color: AppColors.accent,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              '${product.stockQuantity} items available',
-                              style: AppTheme.elegantBodyStyle.copyWith(
-                                fontSize: 16,
-                                color: AppColors.accent,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          ),
-
-          // Add to cart button
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: product.availability ? onAddToCart : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_shopping_cart, size: 24),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Add to Cart',
-                      style: AppTheme.buttonTextStyle.copyWith(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
