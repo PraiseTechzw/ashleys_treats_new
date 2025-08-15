@@ -19,6 +19,56 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+  bool _hasCheckedSession = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkExistingSession();
+  }
+
+  Future<void> _checkExistingSession() async {
+    // Wait a bit for the auth provider to initialize
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (mounted) {
+      final authState = ref.read(authProvider);
+
+      // If user is already authenticated, redirect to home
+      if (authState.isAuthenticated && authState.user != null) {
+        print('LoginScreen: User already authenticated, redirecting to home');
+        _redirectToHome();
+        return;
+      }
+
+      // If auth provider hasn't checked session yet, wait for it
+      if (!authState.hasCheckedSession) {
+        print('LoginScreen: Waiting for auth provider to check session...');
+        await ref.read(authProvider.notifier).refreshAuthStatus();
+
+        // Check again after refresh
+        final refreshedAuthState = ref.read(authProvider);
+        if (refreshedAuthState.isAuthenticated &&
+            refreshedAuthState.user != null) {
+          print(
+            'LoginScreen: Session found after refresh, redirecting to home',
+          );
+          _redirectToHome();
+          return;
+        }
+      }
+
+      setState(() {
+        _hasCheckedSession = true;
+      });
+    }
+  }
+
+  void _redirectToHome() {
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/auth');
+    }
+  }
 
   @override
   void dispose() {
@@ -38,7 +88,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .login(_emailController.text.trim(), _passwordController.text);
 
       if (success && mounted) {
-        Navigator.pushReplacementNamed(context, '/welcome', arguments: false);
+        Navigator.pushReplacementNamed(context, '/auth');
       } else if (mounted) {
         ToastManager.showError(
           context,
@@ -59,6 +109,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+
+    // Show loading while checking session
+    if (!_hasCheckedSession || authState.isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset(
+                'assets/animations/loading.json',
+                width: 80,
+                height: 80,
+                repeat: true,
+                animate: true,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Checking session...',
+                style: AppTheme.elegantBodyStyle.copyWith(
+                  fontSize: 16,
+                  color: AppColors.secondary.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // If user is authenticated, show loading while redirecting
+    if (authState.isAuthenticated && authState.user != null) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset(
+                'assets/animations/loading.json',
+                width: 80,
+                height: 80,
+                repeat: true,
+                animate: true,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Redirecting to home...',
+                style: AppTheme.elegantBodyStyle.copyWith(
+                  fontSize: 16,
+                  color: AppColors.secondary.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -84,7 +192,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           borderRadius: BorderRadius.circular(50),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
+                              color: AppColors.primary.withValues(alpha: 0.3),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),

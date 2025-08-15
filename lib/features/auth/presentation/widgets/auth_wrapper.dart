@@ -47,7 +47,7 @@ class AuthLoadingScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
             colors: [
               AppColors.background,
-              AppColors.cardColor.withOpacity(0.3),
+              AppColors.cardColor.withValues(alpha: 0.3),
               AppColors.background,
             ],
           ),
@@ -124,11 +124,7 @@ class AuthGuard extends ConsumerWidget {
   final Widget child;
   final bool requireAdmin;
 
-  const AuthGuard({
-    super.key,
-    required this.child,
-    this.requireAdmin = false,
-  });
+  const AuthGuard({super.key, required this.child, this.requireAdmin = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -159,7 +155,7 @@ class AuthGuard extends ConsumerWidget {
             end: Alignment.bottomCenter,
             colors: [
               AppColors.background,
-              AppColors.cardColor.withOpacity(0.3),
+              AppColors.cardColor.withValues(alpha: 0.3),
               AppColors.background,
             ],
           ),

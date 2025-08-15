@@ -6,6 +6,7 @@ import '../../features/splash/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/widgets/auth_wrapper.dart';
 import '../../features/splash/presentation/providers/onboarding_provider.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 
 class AppWrapper extends ConsumerStatefulWidget {
   const AppWrapper({super.key});
@@ -55,6 +56,28 @@ class _AppWrapperState extends ConsumerState<AppWrapper> {
     }
 
     if (mounted) {
+      // Wait for auth provider to check session status
+      final authState = ref.read(authProvider);
+      print(
+        'AppWrapper: Auth state before route determination - isAuthenticated: ${authState.isAuthenticated}, hasCheckedSession: ${authState.hasCheckedSession}',
+      ); // Debug
+
+      // If auth provider hasn't checked session yet, wait for it
+      if (!authState.hasCheckedSession) {
+        print(
+          'AppWrapper: Waiting for auth provider to check session...',
+        ); // Debug
+        await Future.delayed(
+          const Duration(milliseconds: 500),
+        ); // Give auth provider time to initialize
+
+        // Force a refresh if still not checked
+        if (!authState.hasCheckedSession) {
+          print('AppWrapper: Forcing auth status refresh...'); // Debug
+          await ref.read(authProvider.notifier).refreshAuthStatus();
+        }
+      }
+
       final route = await NavigationService.getInitialRoute(ref);
       print('AppWrapper: Determined route: $route'); // Debug
       setState(() {

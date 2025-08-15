@@ -9,12 +9,14 @@ class AuthState {
   final bool isLoading;
   final UserModel? user;
   final String? error;
+  final bool hasCheckedSession;
 
   const AuthState({
     this.isAuthenticated = false,
     this.isLoading = false,
     this.user,
     this.error,
+    this.hasCheckedSession = false,
   });
 
   AuthState copyWith({
@@ -22,6 +24,7 @@ class AuthState {
     bool? isLoading,
     UserModel? user,
     String? error,
+    bool? hasCheckedSession,
     bool clearError = false,
   }) {
     return AuthState(
@@ -29,6 +32,7 @@ class AuthState {
       isLoading: isLoading ?? this.isLoading,
       user: user ?? this.user,
       error: clearError ? null : (error ?? this.error),
+      hasCheckedSession: hasCheckedSession ?? this.hasCheckedSession,
     );
   }
 }
@@ -48,31 +52,46 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final userId = prefs.getString('userId');
       final userEmail = prefs.getString('userEmail');
       final userRole = prefs.getString('userRole');
+      final userName = prefs.getString('userName');
+      final userPhone = prefs.getString('userPhone');
 
-      if (userId != null && userEmail != null) {
+      if (userId != null && userEmail != null && userEmail.isNotEmpty) {
+        // Validate that we have the minimum required data
         final user = UserModel(
           userId: userId,
           email: userEmail,
           role: userRole ?? 'customer',
-          displayName: prefs.getString('userName') ?? '',
-          phoneNumber: prefs.getString('userPhone') ?? '',
+          displayName: userName ?? '',
+          phoneNumber: userPhone ?? '',
           addresses: [],
           preferences: {},
           createdAt: DateTime.now(),
           lastActive: DateTime.now(),
         );
+
         state = state.copyWith(
           isAuthenticated: true,
           user: user,
           isLoading: false,
+          hasCheckedSession: true,
         );
+
+        print('Auth: Session restored for user: ${user.email} (${user.role})');
       } else {
-        state = state.copyWith(isLoading: false);
+        state = state.copyWith(
+          isAuthenticated: false,
+          user: null,
+          isLoading: false,
+          hasCheckedSession: true,
+        );
+        print('Auth: No valid session found');
       }
     } catch (e) {
+      print('Auth: Error checking auth status: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'Failed to check authentication status',
+        hasCheckedSession: true,
       );
     }
   }
@@ -100,12 +119,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
           user: user as UserModel,
           isLoading: false,
         );
+
+        print('Auth: User logged in successfully: ${user.email}');
         return true;
       } else {
         state = state.copyWith(isLoading: false, error: 'Invalid credentials');
         return false;
       }
     } catch (e) {
+      print('Auth: Login error: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'Login failed: ${e.toString()}',
@@ -144,12 +166,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
           user: user as UserModel,
           isLoading: false,
         );
+
+        print('Auth: User registered successfully: ${user.email}');
         return true;
       } else {
         state = state.copyWith(isLoading: false, error: 'Registration failed');
         return false;
       }
     } catch (e) {
+      print('Auth: Registration error: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'Registration failed: ${e.toString()}',
@@ -176,7 +201,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         error: null,
       );
+
+      print('Auth: User logged out successfully');
     } catch (e) {
+      print('Auth: Logout error: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'Logout failed: ${e.toString()}',
@@ -191,12 +219,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> forgotPassword(String email) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
-      
+
       await _authRepository.forgotPassword(email: email);
-      
+
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
+      print('Auth: Forgot password error: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'Failed to send password reset email: ${e.toString()}',
@@ -205,8 +234,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  // Check if user has a valid session stored
+  Future<bool> hasValidSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+      final userEmail = prefs.getString('userEmail');
+
+      return userId != null && userEmail != null && userEmail.isNotEmpty;
+    } catch (e) {
+      print('Auth: Error checking session validity: $e');
+      return false;
+    }
+  }
+
+  // Refresh auth status (useful for app resume)
+  Future<void> refreshAuthStatus() async {
+    if (!state.hasCheckedSession) {
+      await _checkAuthStatus();
+    }
+  }
+
   bool get isAdmin => state.user?.role == 'admin';
   bool get isCustomer => state.user?.role == 'customer';
+  bool get hasCheckedSession => state.hasCheckedSession;
 }
 
 // Providers

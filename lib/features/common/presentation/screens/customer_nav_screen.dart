@@ -86,6 +86,56 @@ class _CustomerNavScreenState extends ConsumerState<CustomerNavScreen>
     });
   }
 
+  Future<void> _logout() async {
+    // Show confirmation dialog
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Logout',
+          style: AppTheme.girlishHeadingStyle.copyWith(
+            fontSize: 20,
+            color: AppColors.secondary,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: AppTheme.elegantBodyStyle.copyWith(
+            fontSize: 16,
+            color: AppColors.secondary.withValues(alpha: 0.7),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: AppTheme.buttonTextStyle.copyWith(
+                color: AppColors.secondary.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Logout',
+              style: AppTheme.buttonTextStyle.copyWith(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true && mounted) {
+      await ref.read(authProvider.notifier).logout();
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
@@ -105,13 +155,52 @@ class _CustomerNavScreenState extends ConsumerState<CustomerNavScreen>
           ),
         ),
         actions: [
-          // User Avatar
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              backgroundColor: AppColors.primary.withOpacity(0.1),
-              child: Icon(Icons.person, color: AppColors.primary, size: 24),
+          // User Avatar with Menu
+          PopupMenuButton<String>(
+            icon: Container(
+              margin: const EdgeInsets.only(right: 16),
+              child: CircleAvatar(
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                child: Icon(Icons.person, color: AppColors.primary, size: 24),
+              ),
             ),
+            onSelected: (value) {
+              if (value == 'logout') {
+                _logout();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'profile',
+                child: Row(
+                  children: [
+                    Icon(Icons.person_outline, color: AppColors.primary),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Profile',
+                      style: AppTheme.elegantBodyStyle.copyWith(
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: AppColors.accent),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Logout',
+                      style: AppTheme.elegantBodyStyle.copyWith(
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -139,7 +228,7 @@ class _CustomerNavScreenState extends ConsumerState<CustomerNavScreen>
           color: AppColors.surface,
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -164,7 +253,7 @@ class _CustomerNavScreenState extends ConsumerState<CustomerNavScreen>
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primary.withOpacity(0.1)
+                          ? AppColors.primary.withValues(alpha: 0.1)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -180,7 +269,9 @@ class _CustomerNavScreenState extends ConsumerState<CustomerNavScreen>
                                 isSelected ? item['activeIcon'] : item['icon'],
                                 color: isSelected
                                     ? AppColors.primary
-                                    : AppColors.secondary.withOpacity(0.6),
+                                    : AppColors.secondary.withValues(
+                                        alpha: 0.6,
+                                      ),
                                 size: 24,
                               ),
                             ),
@@ -194,7 +285,9 @@ class _CustomerNavScreenState extends ConsumerState<CustomerNavScreen>
                                     : FontWeight.normal,
                                 color: isSelected
                                     ? AppColors.primary
-                                    : AppColors.secondary.withOpacity(0.6),
+                                    : AppColors.secondary.withValues(
+                                        alpha: 0.6,
+                                      ),
                               ),
                               child: Text(item['label']),
                             ),

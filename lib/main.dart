@@ -11,6 +11,7 @@ import 'features/auth/presentation/widgets/auth_wrapper.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'features/splash/presentation/onboarding_screen.dart';
 import 'core/widgets/app_wrapper.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,11 +26,40 @@ void main() async {
   runApp(const ProviderScope(child: AshleyTreatsApp()));
 }
 
-class AshleyTreatsApp extends ConsumerWidget {
+class AshleyTreatsApp extends ConsumerStatefulWidget {
   const AshleyTreatsApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AshleyTreatsApp> createState() => _AshleyTreatsAppState();
+}
+
+class _AshleyTreatsAppState extends ConsumerState<AshleyTreatsApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    // When app comes back to foreground, refresh auth status
+    if (state == AppLifecycleState.resumed) {
+      print('App: App resumed, refreshing auth status...');
+      ref.read(authProvider.notifier).refreshAuthStatus();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ashley\'s Treats',
       theme: AppTheme.lightTheme,
