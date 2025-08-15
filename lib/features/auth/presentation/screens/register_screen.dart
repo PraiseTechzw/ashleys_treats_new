@@ -36,19 +36,103 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
+  /// Formats the name to capitalize the first letter of each word
+  String _formatName(String name) {
+    if (name.isEmpty) return name;
+
+    // Split the name into words and capitalize each word
+    final words = name.split(' ');
+    final formattedWords = words.map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).toList();
+
+    // Join the words back together
+    return formattedWords.join(' ');
+  }
+
+  /// Validates phone number length
+  bool _isValidPhoneNumber(String phoneNumber) {
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
+
+    // Zimbabwe phone number validation with specific limits
+    if (cleanNumber.startsWith('07')) {
+      // Zimbabwe mobile numbers: 07XXXXXXXX (9 digits total)
+      return cleanNumber.length == 9;
+    } else if (cleanNumber.startsWith('7') && cleanNumber.length == 8) {
+      // Zimbabwe mobile numbers without leading 0: 7XXXXXXXX (8 digits)
+      return true;
+    } else if (cleanNumber.startsWith('263') && cleanNumber.length == 11) {
+      // International format: 263XXXXXXXXX (11 digits total)
+      return true;
+    }
+
+    // General validation for other countries
+    return cleanNumber.length >= 7 && cleanNumber.length <= 15;
+  }
+
+  /// Get specific phone validation error message
+  String _getPhoneValidationMessage(String phoneNumber) {
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
+
+    if (cleanNumber.startsWith('07')) {
+      if (cleanNumber.length < 9)
+        return 'Zimbabwe mobile number must be 9 digits (07XXXXXXXX)';
+      if (cleanNumber.length > 9)
+        return 'Zimbabwe mobile number must be exactly 9 digits (07XXXXXXXX)';
+      return 'Valid Zimbabwe mobile number';
+    } else if (cleanNumber.startsWith('7') && cleanNumber.length == 8) {
+      return 'Valid Zimbabwe mobile number (7XXXXXXXX)';
+    } else if (cleanNumber.startsWith('263') && cleanNumber.length == 11) {
+      return 'Valid international Zimbabwe number (263XXXXXXXXX)';
+    } else if (cleanNumber.startsWith('7') || cleanNumber.startsWith('263')) {
+      return 'Invalid Zimbabwe number format';
+    }
+
+    // General validation message
+    if (cleanNumber.length < 7) return 'Phone number must be at least 7 digits';
+    if (cleanNumber.length > 15) return 'Phone number cannot exceed 15 digits';
+    return 'Invalid phone number format';
+  }
+
+  /// Get phone counter text with appropriate limits
+  String _getPhoneCounterText(String phoneNumber) {
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
+
+    if (cleanNumber.startsWith('07')) {
+      return '${cleanNumber.length}/9 digits (07XXXXXXXX)';
+    } else if (cleanNumber.startsWith('7')) {
+      return '${cleanNumber.length}/8 digits (7XXXXXXXX)';
+    } else if (cleanNumber.startsWith('263')) {
+      return '${cleanNumber.length}/11 digits (263XXXXXXXXX)';
+    }
+
+    return '${cleanNumber.length}/15 digits';
+  }
+
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+
+    // Additional phone validation
+    final phoneNumber = _phoneController.text.trim();
+    if (!_isValidPhoneNumber(phoneNumber)) {
+      ToastManager.showError(context, _getPhoneValidationMessage(phoneNumber));
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
+      // Format name to capitalize first letter of each word
+      final formattedName = _formatName(_nameController.text.trim());
+
       final success = await ref
           .read(authProvider.notifier)
           .register(
             _emailController.text.trim(),
             _passwordController.text,
-            _nameController.text.trim(),
-            _phoneController.text.trim(),
+            formattedName,
+            phoneNumber,
           );
 
       if (success && mounted) {
@@ -56,7 +140,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           context,
           'Registration successful! Welcome to Ashley\'s Treats!',
         );
-        Navigator.pushReplacementNamed(context, '/auth');
+        Navigator.pushReplacementNamed(context, '/welcome', arguments: true);
       } else if (mounted) {
         ToastManager.showError(
           context,
@@ -145,7 +229,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
                     labelText: 'Full Name',
-                    hintText: 'Enter your full name',
+                    hintText: 'e.g., John Smith',
                     prefixIcon: Icon(Icons.person_outlined),
                   ),
                   validator: (value) {
@@ -186,6 +270,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 const SizedBox(height: 20),
 
+                // Phone number format info
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Zimbabwe mobile numbers: 07XXXXXXXX (9 digits) or 7XXXXXXXX (8 digits)',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
                 // Phone Field
                 Container(
                   decoration: BoxDecoration(
@@ -214,24 +332,66 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       dialCode: '+263',
                     ),
                     formatInput: true,
+                    maxLength: 15, // Limit phone number to 15 digits
                     keyboardType: const TextInputType.numberWithOptions(
                       signed: true,
                       decimal: true,
                     ),
                     inputDecoration: const InputDecoration(
                       labelText: 'Phone Number',
-                      hintText: 'Enter your phone number',
+                      hintText: 'e.g., 07XXXXXXXX or 7XXXXXXXX',
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 16,
                       ),
+                      counterText:
+                          '', // Hide the default counter since we have a custom one
                     ),
                     onFieldSubmitted: (_) {
                       // Handle field submission
                     },
                   ),
                 ),
+
+                // Phone validation message
+                if (_phoneController.text.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0, left: 12.0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          _isValidPhoneNumber(_phoneController.text)
+                              ? Icons.check_circle
+                              : Icons.error,
+                          color: _isValidPhoneNumber(_phoneController.text)
+                              ? Colors.green[600]
+                              : Colors.red[600],
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _getPhoneValidationMessage(_phoneController.text),
+                          style: TextStyle(
+                            color: _isValidPhoneNumber(_phoneController.text)
+                                ? Colors.green[600]
+                                : Colors.red[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // Phone character counter
+                if (_phoneController.text.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0, left: 12.0),
+                    child: Text(
+                      '${_phoneController.text.replaceAll(RegExp(r'[^\d]'), '').length} digits',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                    ),
+                  ),
 
                 const SizedBox(height: 20),
 

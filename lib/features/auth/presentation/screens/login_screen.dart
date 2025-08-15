@@ -38,7 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .login(_emailController.text.trim(), _passwordController.text);
 
       if (success && mounted) {
-        Navigator.pushReplacementNamed(context, '/auth');
+        Navigator.pushReplacementNamed(context, '/welcome', arguments: false);
       } else if (mounted) {
         ToastManager.showError(
           context,
@@ -217,11 +217,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Center(
                   child: TextButton(
                     onPressed: () {
-                      // TODO: Implement forgot password
-                      ToastManager.showInfo(
-                        context,
-                        'Forgot password feature coming soon!',
-                      );
+                      Navigator.pushNamed(context, '/forgot_password');
                     },
                     child: Text(
                       'Forgot Password?',

@@ -4,6 +4,8 @@ import 'core/theme/app_theme.dart';
 import 'services/firebase/firebase_service.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/register_screen.dart';
+import 'features/auth/presentation/screens/forgot_password_screen.dart';
+import 'features/auth/presentation/screens/welcome_screen.dart';
 import 'features/auth/presentation/widgets/auth_wrapper.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'features/splash/presentation/onboarding_screen.dart';
@@ -26,12 +28,38 @@ class AshleyTreatsApp extends ConsumerWidget {
       title: 'Ashley\'s Treats',
       theme: AppTheme.lightTheme,
       home: const AppWrapper(),
-      routes: {
-        '/splash': (context) => const SplashScreen(),
-        '/onboarding': (context) => const OnboardingScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/auth': (context) => const AuthWrapper(),
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case '/splash':
+            return MaterialPageRoute(
+              builder: (context) => const SplashScreen(),
+            );
+          case '/onboarding':
+            return MaterialPageRoute(
+              builder: (context) => const OnboardingScreen(),
+            );
+          case '/login':
+            return MaterialPageRoute(builder: (context) => const LoginScreen());
+          case '/register':
+            return MaterialPageRoute(
+              builder: (context) => const RegisterScreen(),
+            );
+          case '/forgot_password':
+            return MaterialPageRoute(
+              builder: (context) => const ForgotPasswordScreen(),
+            );
+          case '/welcome':
+            final isNewUser = settings.arguments as bool? ?? false;
+            return MaterialPageRoute(
+              builder: (context) => WelcomeScreen(isNewUser: isNewUser),
+            );
+          case '/auth':
+            return MaterialPageRoute(builder: (context) => const AuthWrapper());
+          default:
+            return MaterialPageRoute(
+              builder: (context) => const SplashScreen(),
+            );
+        }
       },
     );
   }

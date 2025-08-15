@@ -9,4 +9,7 @@ class AppColors {
   static const Color surface = Color(0xFFFFFFFF); // Pure White
   static const Color onPrimary = Color(0xFFFFFFFF); // White text on primary
   static const Color onSecondary = Color(0xFFFFFFFF); // White text on secondary
+  static const Color onBackground = Color(
+    0xFF2D2D2D,
+  ); // Dark text on background
 }
