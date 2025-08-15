@@ -197,7 +197,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
                 position: _slideAnimation,
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-              child: Container(
+                  child: Container(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
@@ -343,98 +343,98 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
                 position: _slideAnimation,
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-              child: Container(
+                  child: Container(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 24,
                     ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.accent.withOpacity(0.15),
-                      AppColors.primary.withOpacity(0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: AppColors.accent.withOpacity(0.3),
-                        width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.accent.withOpacity(0.1),
-                      blurRadius: 15,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Lottie.asset(
-                          'assets/animations/Delivery.json',
-                          height: 60,
-                          fit: BoxFit.contain,
-                        ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.accent.withOpacity(0.15),
+                          AppColors.primary.withOpacity(0.1),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: AppColors.accent.withOpacity(0.3),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.accent.withOpacity(0.1),
+                          blurRadius: 15,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.accent.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Lottie.asset(
+                              'assets/animations/Delivery.json',
+                              height: 60,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.local_shipping_rounded,
-                                  color: AppColors.accent,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Fast & Fresh Delivery!',
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.local_shipping_rounded,
+                                      color: AppColors.accent,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Fast & Fresh Delivery!',
                                       style: AppTheme.girlishHeadingStyle
                                           .copyWith(
-                                    fontSize: 16,
-                                    color: AppColors.accent,
-                                    fontWeight: FontWeight.w600,
+                                            fontSize: 16,
+                                            color: AppColors.accent,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Track your order in real-time and enjoy every bite. We ensure your treats arrive fresh and delicious!',
+                                  style: AppTheme.elegantBodyStyle.copyWith(
+                                    fontSize: 14,
+                                    color: AppColors.secondary.withOpacity(0.8),
+                                    height: 1.4,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Track your order in real-time and enjoy every bite. We ensure your treats arrive fresh and delicious!',
-                              style: AppTheme.elegantBodyStyle.copyWith(
-                                fontSize: 14,
-                                color: AppColors.secondary.withOpacity(0.8),
-                                height: 1.4,
-                              ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.accent.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.track_changes_rounded,
-                          color: AppColors.accent,
-                          size: 24,
-                        ),
-                      ),
-                    ],
+                            child: Icon(
+                              Icons.track_changes_rounded,
+                              color: AppColors.accent,
+                              size: 24,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -581,331 +581,3 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
     }
   }
 }
-
-                              style: AppTheme.elegantBodyStyle.copyWith(
-
-                                fontSize: 14,
-
-                                color: AppColors.secondary.withOpacity(0.8),
-
-                                height: 1.4,
-
-                              ),
-
-                            ),
-
-                          ],
-
-                        ),
-
-                      ),
-
-                      Container(
-
-                        padding: const EdgeInsets.all(8),
-
-                        decoration: BoxDecoration(
-
-                          color: AppColors.accent.withOpacity(0.2),
-
-                          borderRadius: BorderRadius.circular(12),
-
-                        ),
-
-                        child: Icon(
-
-                          Icons.track_changes_rounded,
-
-                          color: AppColors.accent,
-
-                          size: 24,
-
-                        ),
-
-                      ),
-
-                    ],
-
-                      ),
-                    ),
-                  ),
-
-                ),
-
-              ),
-
-            ),
-
-            SliverToBoxAdapter(child: SizedBox(height: 32)),
-
-          ],
-
-        ),
-
-      ),
-
-    );
-
-  }
-
-
-
-  Widget _buildFeaturedProductsSection() {
-
-    final featuredProducts = ref.watch(featuredProductsProvider);
-
-
-
-    return SizedBox(
-
-      height: 200,
-
-      child: ListView.builder(
-
-        scrollDirection: Axis.horizontal,
-
-        itemCount: featuredProducts.length,
-
-        itemBuilder: (context, index) {
-
-          final product = featuredProducts[index];
-
-          return ProductCard(
-            product: product,
-            onTap: () => _showProductDetails(product),
-
-            onAddToCart: () => _addToCart(product),
-            showInfoIcon: true,
-          );
-
-        },
-
-      ),
-
-    );
-
-  }
-
-
-
-  Widget _buildCategoriesSection() {
-
-    final categories = ref.watch(categoriesProvider);
-
-
-
-    return SizedBox(
-
-      height: 100,
-
-      child: ListView.builder(
-
-        scrollDirection: Axis.horizontal,
-
-        itemCount: categories.length,
-
-        itemBuilder: (context, index) {
-
-          final category = categories[index];
-
-          final isSelected =
-
-              ref.watch(productProvider).selectedCategory == category;
-
-
-
-          return GestureDetector(
-
-            onTap: () {
-
-              ref
-
-                  .read(productProvider.notifier)
-
-                  .loadProductsByCategory(category);
-
-            },
-
-            child: Container(
-
-              width: 80,
-
-              margin: const EdgeInsets.only(left: 16, right: 8),
-
-              child: Column(
-
-                children: [
-
-                  Container(
-
-                    width: 60,
-
-                    height: 60,
-
-                    decoration: BoxDecoration(
-
-                      color: isSelected
-
-                          ? AppColors.primary.withOpacity(0.2)
-
-                          : AppColors.cardColor.withOpacity(0.1),
-
-                      borderRadius: BorderRadius.circular(30),
-
-                      border: Border.all(
-
-                        color: isSelected
-
-                            ? AppColors.primary
-
-                            : AppColors.cardColor.withOpacity(0.3),
-
-                        width: 2,
-
-                      ),
-
-                    ),
-
-                    child: Icon(
-
-                      _getCategoryIcon(category),
-
-                      color: isSelected
-
-                          ? AppColors.primary
-
-                          : AppColors.secondary,
-
-                      size: 30,
-
-                    ),
-
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-
-                    category,
-
-                    style: AppTheme.elegantBodyStyle.copyWith(
-
-                      fontSize: 12,
-
-                      color: isSelected
-
-                          ? AppColors.primary
-
-                          : AppColors.secondary,
-
-                      fontWeight: isSelected
-
-                          ? FontWeight.w600
-
-                          : FontWeight.normal,
-
-                    ),
-
-                    textAlign: TextAlign.center,
-
-                  ),
-
-                ],
-
-              ),
-
-            ),
-
-          );
-
-        },
-
-      ),
-
-    );
-
-  }
-
-
-
-  Widget _buildProductsSection() {
-
-    final products = ref.watch(productProvider).productsByCategory;
-
-
-
-    return SizedBox(
-
-      height: 200,
-
-      child: ListView.builder(
-
-        scrollDirection: Axis.horizontal,
-
-        itemCount: products.length,
-
-        itemBuilder: (context, index) {
-
-          final product = products[index];
-
-          return ProductCard(
-            product: product,
-            onTap: () => _showProductDetails(product),
-
-            onAddToCart: () => _addToCart(product),
-            showInfoIcon: true,
-          );
-
-        },
-
-      ),
-
-    );
-
-  }
-
-
-
-  IconData _getCategoryIcon(String category) {
-
-    switch (category.toLowerCase()) {
-
-      case 'cupcakes':
-
-        return Icons.cake;
-
-      case 'cakes':
-
-        return Icons.cake_outlined;
-
-      case 'cookies':
-
-        return Icons.cookie;
-
-      case 'donuts':
-
-        return Icons.circle;
-
-      case 'muffins':
-
-        return Icons.cake_outlined;
-
-      case 'brownies':
-
-        return Icons.square;
-
-      case 'cake pops':
-
-        return Icons.cake_outlined;
-
-      default:
-
-        return Icons.cake;
-
-    }
-
-  }
-
-}
-
-

@@ -201,7 +201,7 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.onPrimary,
           elevation: 0,
-          shadowColor: AppColors.primary.withValues(alpha: 0.3),
+          shadowColor: AppColors.primary.withOpacity(0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -252,7 +252,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
-        shadowColor: AppColors.primary.withValues(alpha: 0.1),
+        shadowColor: AppColors.primary.withOpacity(0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
 
@@ -294,7 +294,7 @@ class AppTheme {
   static TextStyle get authSubtitleStyle => GoogleFonts.lora(
     fontSize: 16,
     fontWeight: FontWeight.normal,
-    color: AppColors.secondary.withValues(alpha: 0.7),
+    color: AppColors.secondary.withOpacity(0.7),
     height: 1.5,
     fontStyle: FontStyle.italic,
   );

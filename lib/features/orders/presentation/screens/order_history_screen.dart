@@ -310,10 +310,10 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
         itemCount: filters.length,
         itemBuilder: (context, index) {
           final filter = filters[index];
-          final isSelected = _selectedFilter == filter['value'];
+          final isSelected = _selectedFilter == filter['value'] as String;
 
           return GestureDetector(
-            onTap: () => _onFilterChanged(filter['value']!),
+            onTap: () => _onFilterChanged(filter['value'] as String),
             child: Container(
               margin: const EdgeInsets.only(right: 12),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -354,7 +354,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    filter['label']!,
+                    filter['label'] as String,
                     style: AppTheme.elegantBodyStyle.copyWith(
                       color: isSelected ? Colors.white : AppColors.primary,
                       fontWeight: isSelected
@@ -597,7 +597,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                       ),
                     ),
                     const SizedBox(height: 8),
-                    ...(order['items'] as List<dynamic>)
+                    ...(order['items'] as List<String>)
                         .take(3)
                         .map(
                           (item) => Padding(
@@ -612,7 +612,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    item.toString(),
+                                    item,
                                     style: AppTheme.elegantBodyStyle.copyWith(
                                       fontSize: 13,
                                       color: AppColors.secondary.withOpacity(
@@ -625,11 +625,11 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                             ),
                           ),
                         ),
-                    if ((order['items'] as List<dynamic>).length > 3)
+                    if ((order['items'] as List<String>).length > 3)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                          '+${(order['items'] as List<dynamic>).length - 3} more items',
+                          '+${(order['items'] as List<String>).length - 3} more items',
                           style: AppTheme.elegantBodyStyle.copyWith(
                             fontSize: 12,
                             color: AppColors.primary,

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/custom_toast.dart';
 import '../providers/cart_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/cart_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});

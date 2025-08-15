@@ -204,19 +204,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.primary.withOpacity(0.15),
-                AppColors.cardColor.withOpacity(0.25),
-                AppColors.accent.withOpacity(0.1),
+                AppColors.primary.withValues(alpha: 0.15),
+                AppColors.cardColor.withValues(alpha: 0.25),
+                AppColors.accent.withValues(alpha: 0.1),
               ],
             ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: AppColors.primary.withOpacity(0.2),
+              color: AppColors.primary.withValues(alpha: 0.2),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.15),
+                color: AppColors.primary.withValues(alpha: 0.15),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
                 spreadRadius: 2,
@@ -233,13 +233,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColors.primary.withOpacity(0.2),
-                          AppColors.accent.withOpacity(0.1),
+                          AppColors.primary.withValues(alpha: 0.2),
+                          AppColors.accent.withValues(alpha: 0.1),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.3),
+                        color: AppColors.primary.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -267,7 +267,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                           'Find your perfect sweet treat',
                           style: AppTheme.elegantBodyStyle.copyWith(
                             fontSize: 14,
-                            color: AppColors.secondary.withOpacity(0.7),
+                            color: AppColors.secondary.withValues(alpha: 0.7),
                             fontStyle: FontStyle.italic,
                           ),
                         ),
@@ -281,17 +281,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
               // Enhanced Search Bar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -303,7 +306,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   decoration: InputDecoration(
                     hintText: 'Search for cupcakes, cookies, cakes...',
                     hintStyle: AppTheme.elegantBodyStyle.copyWith(
-                      color: AppColors.secondary.withOpacity(0.5),
+                      color: AppColors.secondary.withValues(alpha: 0.5),
                     ),
                     border: InputBorder.none,
                     icon: Icon(
@@ -321,7 +324,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                               margin: const EdgeInsets.all(8),
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.1),
+                                color: AppColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
@@ -335,8 +338,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -362,8 +365,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 gradient: isSelected
                     ? LinearGradient(
                         colors: [
-                          AppColors.primary.withOpacity(0.8),
-                          AppColors.accent.withOpacity(0.6),
+                          AppColors.primary.withValues(alpha: 0.8),
+                          AppColors.accent.withValues(alpha: 0.6),
                         ],
                       )
                     : null,
@@ -372,13 +375,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 border: Border.all(
                   color: isSelected
                       ? Colors.transparent
-                      : AppColors.primary.withOpacity(0.3),
+                      : AppColors.primary.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -411,7 +414,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: AppColors.primary.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -470,13 +473,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primary.withOpacity(0.2),
-                    AppColors.accent.withOpacity(0.1),
+                    AppColors.primary.withValues(alpha: 0.2),
+                    AppColors.accent.withValues(alpha: 0.1),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: AppColors.primary.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -550,7 +553,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -598,13 +601,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.primary.withOpacity(0.1),
-                  AppColors.accent.withOpacity(0.05),
+                  AppColors.primary.withValues(alpha: 0.1),
+                  AppColors.accent.withValues(alpha: 0.05),
                 ],
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.primary.withOpacity(0.2),
+                color: AppColors.primary.withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
@@ -652,7 +655,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(25),
               border: Border.all(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -684,21 +687,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
           ),
         ),
         child: Column(
           children: [
             Icon(
               Icons.history_rounded,
-              color: AppColors.secondary.withOpacity(0.5),
+              color: AppColors.secondary.withValues(alpha: 0.5),
               size: 48,
             ),
             const SizedBox(height: 16),
             Text(
               'No recent searches yet',
               style: AppTheme.elegantBodyStyle.copyWith(
-                color: AppColors.secondary.withOpacity(0.6),
+                color: AppColors.secondary.withValues(alpha: 0.6),
                 fontSize: 16,
               ),
             ),
@@ -721,14 +724,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
               ),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.history_rounded,
-                  color: AppColors.secondary.withOpacity(0.5),
+                  color: AppColors.secondary.withValues(alpha: 0.5),
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -743,7 +746,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: AppColors.secondary.withOpacity(0.3),
+                  color: AppColors.secondary.withValues(alpha: 0.3),
                   size: 16,
                 ),
               ],
@@ -768,7 +771,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           Text(
             'Searching...',
             style: AppTheme.elegantBodyStyle.copyWith(
-              color: AppColors.secondary.withOpacity(0.7),
+              color: AppColors.secondary.withValues(alpha: 0.7),
               fontSize: 18,
             ),
           ),
@@ -787,12 +790,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.cardColor.withOpacity(0.1),
+                color: AppColors.cardColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Icon(
                 Icons.search_off_rounded,
-                color: AppColors.secondary.withOpacity(0.5),
+                color: AppColors.secondary.withValues(alpha: 0.5),
                 size: 64,
               ),
             ),
@@ -801,7 +804,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               'No results found',
               style: AppTheme.girlishHeadingStyle.copyWith(
                 fontSize: 24,
-                color: AppColors.secondary.withOpacity(0.7),
+                color: AppColors.secondary.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 12),
@@ -809,7 +812,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               'Try adjusting your search or filter criteria',
               style: AppTheme.elegantBodyStyle.copyWith(
                 fontSize: 16,
-                color: AppColors.secondary.withOpacity(0.5),
+                color: AppColors.secondary.withValues(alpha: 0.5),
               ),
               textAlign: TextAlign.center,
             ),
@@ -850,10 +853,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: AppColors.primary.withOpacity(0.2),
+                  color: AppColors.primary.withValues(alpha: 0.2),
                 ),
               ),
               child: Text(
