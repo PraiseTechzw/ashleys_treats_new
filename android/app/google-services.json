@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "577513212973",
+    "project_id": "ashey-945c9",
+    "storage_bucket": "ashey-945c9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:577513212973:android:ed5ed6b24f0a646e30bca4",
+        "android_client_info": {
+          "package_name": "com.appixia.ashleys_treats_new"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnhl3aBLSSfmMhs-M2DS81vR8REtI8g2Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
