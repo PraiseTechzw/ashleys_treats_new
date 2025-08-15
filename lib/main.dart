@@ -7,7 +7,7 @@ import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/auth/presentation/widgets/auth_wrapper.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'features/splash/presentation/onboarding_screen.dart';
-import 'core/services/navigation_service.dart';
+import 'core/widgets/app_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +25,7 @@ class AshleyTreatsApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Ashley\'s Treats',
       theme: AppTheme.lightTheme,
-      home: const SplashScreen(),
+      home: const AppWrapper(),
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),

@@ -98,8 +98,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     // Mark onboarding as complete
     await ref.read(onboardingProvider.notifier).markOnboardingComplete();
     if (mounted) {
-      // Navigate to the appropriate screen based on auth status
-      await NavigationService.navigateToInitialRoute(context, ref);
+      // Show completion message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Welcome to Ashley\'s Treats! 🎉'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Wait a bit for the message to show
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (mounted) {
+        // Navigate to the appropriate screen based on auth status
+        await NavigationService.navigateToInitialRoute(context, ref);
+      }
     }
   }
 

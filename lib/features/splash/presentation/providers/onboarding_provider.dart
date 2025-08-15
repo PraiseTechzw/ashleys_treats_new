@@ -5,6 +5,10 @@ final onboardingProvider = StateNotifierProvider<OnboardingNotifier, bool>(
   (ref) => OnboardingNotifier(),
 );
 
+final onboardingNotifierProvider = Provider<OnboardingNotifier>((ref) {
+  return ref.read(onboardingProvider.notifier);
+});
+
 class OnboardingNotifier extends StateNotifier<bool> {
   OnboardingNotifier() : super(false) {
     _loadOnboardingStatus();

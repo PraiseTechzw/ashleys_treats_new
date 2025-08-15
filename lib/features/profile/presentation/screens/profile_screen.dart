@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../splash/presentation/providers/onboarding_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -209,6 +210,13 @@ class ProfileScreen extends ConsumerWidget {
               _buildMenuItem('About App', Icons.info_outline, () {
                 // TODO: Navigate to about
               }),
+              _buildMenuItem(
+                'Show Onboarding Again',
+                Icons.school_outlined,
+                () {
+                  _showOnboardingResetDialog(context, ref);
+                },
+              ),
             ]),
 
             const SizedBox(height: 24),
@@ -368,6 +376,62 @@ class ProfileScreen extends ConsumerWidget {
         color: AppColors.secondary.withOpacity(0.5),
       ),
       onTap: onTap,
+    );
+  }
+
+  void _showOnboardingResetDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Show Onboarding Again',
+            style: AppTheme.girlishHeadingStyle.copyWith(
+              fontSize: 20,
+              color: AppColors.secondary,
+            ),
+          ),
+          content: Text(
+            'This will reset the onboarding experience. You\'ll see the welcome screens again on the next app launch.',
+            style: AppTheme.elegantBodyStyle.copyWith(
+              fontSize: 14,
+              color: AppColors.secondary.withOpacity(0.8),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: AppTheme.buttonTextStyle.copyWith(
+                  color: AppColors.secondary.withOpacity(0.7),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                // Reset onboarding
+                await ref.read(onboardingProvider.notifier).resetOnboarding();
+                // Navigate to onboarding
+                if (context.mounted) {
+                  Navigator.of(context).pushReplacementNamed('/onboarding');
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+              ),
+              child: Text(
+                'Reset',
+                style: AppTheme.buttonTextStyle.copyWith(
+                  color: AppColors.onPrimary,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/navigation_service.dart';
 import '../../features/splash/presentation/splash_screen.dart';
-import '../../features/splash/presentation/onboarding_screen.dart';
-import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/widgets/auth_wrapper.dart';
-import '../../features/splash/presentation/providers/onboarding_provider.dart';
-import '../../features/auth/presentation/providers/auth_provider.dart';
 
 class AppWrapper extends ConsumerStatefulWidget {
   const AppWrapper({super.key});
@@ -25,7 +20,7 @@ class _AppWrapperState extends ConsumerState<AppWrapper> {
   Future<void> _checkInitialRoute() async {
     // Wait a bit for providers to initialize
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     if (mounted) {
       final route = await NavigationService.getInitialRoute(ref);
       if (mounted) {
