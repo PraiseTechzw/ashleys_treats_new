@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService {
@@ -7,11 +8,15 @@ class NotificationService {
   NotificationService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
   bool _isInitialized = false;
 
   Future<void> initialize() async {
     if (_isInitialized) return;
+
+    // Initialize local notifications
+    await _initializeLocalNotifications();
 
     // Request permissions
     await _requestPermissions();
@@ -20,6 +25,48 @@ class NotificationService {
     await _configureFirebaseMessaging();
 
     _isInitialized = true;
+  }
+
+  Future<void> _initializeLocalNotifications() async {
+    // Android initialization
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    // iOS initialization
+    const DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    // Combined initialization settings
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+
+    // Initialize the plugin
+    await _localNotifications.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: _onNotificationTapped,
+    );
+
+    // Request permissions for iOS
+    await _localNotifications
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+  }
+
+  void _onNotificationTapped(NotificationResponse response) {
+    // Handle notification tap
+    print('Notification tapped: ${response.payload}');
+    // TODO: Navigate to specific screen based on payload
   }
 
   Future<void> _requestPermissions() async {
@@ -71,14 +118,16 @@ class NotificationService {
     return prefs.getString('fcm_token');
   }
 
-  void _handleForegroundMessage(RemoteMessage message) {
+  void _handleForegroundMessage(RemoteMessage message) async {
     print('Received foreground message: ${message.messageId}');
 
     // Show local notification
-    print(
-      'Firebase Message: ${message.notification?.title ?? 'New Message'} - ${message.notification?.body ?? 'You have a new message'}',
+    await showLocalNotification(
+      id: message.hashCode,
+      title: message.notification?.title ?? 'New Message',
+      body: message.notification?.body ?? 'You have a new message',
+      payload: message.data.toString(),
     );
-    // TODO: Implement local notification when flutter_local_notifications is added
   }
 
   static Future<void> _handleBackgroundMessage(RemoteMessage message) async {
@@ -91,14 +140,87 @@ class NotificationService {
     // TODO: Navigate to specific screen based on message data
   }
 
+  // Show local notification
+  Future<void> showLocalNotification({
+    required int id,
+    required String title,
+    required String body,
+    String? payload,
+    NotificationDetails? notificationDetails,
+  }) async {
+    try {
+      await _localNotifications.show(
+        id,
+        title,
+        body,
+        notificationDetails ?? _getDefaultNotificationDetails(),
+        payload: payload,
+      );
+    } catch (e) {
+      print('Error showing local notification: $e');
+    }
+  }
+
+  // Get default notification details
+  NotificationDetails _getDefaultNotificationDetails() {
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'ashleys_treats_channel',
+      'Ashley\'s Treats Notifications',
+      channelDescription: 'Notifications for orders, promotions, and updates',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+      enableVibration: true,
+      enableLights: true,
+      color: Color(0xFFE91E63), // Pink color matching app theme
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const DarwinNotificationDetails iOSDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    return const NotificationDetails(
+      android: androidDetails,
+      iOS: iOSDetails,
+    );
+  }
+
   // Show order status notification
   Future<void> showOrderStatusNotification({
     required String orderNumber,
     required String status,
     required String message,
   }) async {
-    print('Order Status Notification: Order #$orderNumber - $status: $message');
-    // TODO: Implement local notification when flutter_local_notifications is added
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'order_status_channel',
+        'Order Status Updates',
+        channelDescription: 'Notifications for order status changes',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+        enableVibration: true,
+        enableLights: true,
+        color: Color(0xFF4CAF50), // Green for success
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
+
+    await showLocalNotification(
+      id: orderNumber.hashCode,
+      title: 'Order #$orderNumber - $status',
+      body: message,
+      payload: 'order_status:$orderNumber',
+      notificationDetails: notificationDetails,
+    );
   }
 
   // Show order confirmation notification
@@ -106,10 +228,33 @@ class NotificationService {
     required String orderNumber,
     required double total,
   }) async {
-    print(
-      'Order Confirmation Notification: Order #$orderNumber confirmed for \$${total.toStringAsFixed(2)}',
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'order_confirmation_channel',
+        'Order Confirmations',
+        channelDescription: 'Notifications for order confirmations',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+        enableVibration: true,
+        enableLights: true,
+        color: Color(0xFF2196F3), // Blue for info
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
     );
-    // TODO: Implement local notification when flutter_local_notifications is added
+
+    await showLocalNotification(
+      id: orderNumber.hashCode,
+      title: 'Order Confirmed! 🎉',
+      body: 'Order #$orderNumber has been confirmed for \$${total.toStringAsFixed(2)}',
+      payload: 'order_confirmation:$orderNumber',
+      notificationDetails: notificationDetails,
+    );
   }
 
   // Show delivery notification
@@ -117,10 +262,33 @@ class NotificationService {
     required String orderNumber,
     required String estimatedTime,
   }) async {
-    print(
-      'Delivery Notification: Order #$orderNumber out for delivery. ETA: $estimatedTime',
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'delivery_channel',
+        'Delivery Updates',
+        channelDescription: 'Notifications for delivery status',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+        enableVibration: true,
+        enableLights: true,
+        color: Color(0xFFFF9800), // Orange for delivery
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
     );
-    // TODO: Implement local notification when flutter_local_notifications is added
+
+    await showLocalNotification(
+      id: orderNumber.hashCode,
+      title: '🚚 Out for Delivery!',
+      body: 'Order #$orderNumber is on its way! ETA: $estimatedTime',
+      payload: 'delivery:$orderNumber',
+      notificationDetails: notificationDetails,
+    );
   }
 
   // Show promotional notification
@@ -128,8 +296,33 @@ class NotificationService {
     required String title,
     required String message,
   }) async {
-    print('Promotional Notification: $title - $message');
-    // TODO: Implement local notification when flutter_local_notifications is added
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'promotional_channel',
+        'Promotions & Offers',
+        channelDescription: 'Notifications for special offers and promotions',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+        showWhen: true,
+        enableVibration: true,
+        enableLights: true,
+        color: Color(0xFFE91E63), // Pink for promotions
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
+
+    await showLocalNotification(
+      id: title.hashCode,
+      title: '🎂 $title',
+      body: message,
+      payload: 'promotional:$title',
+      notificationDetails: notificationDetails,
+    );
   }
 
   // Show low stock notification (for admin)
@@ -137,10 +330,74 @@ class NotificationService {
     required String productName,
     required int currentStock,
   }) async {
-    print(
-      'Low Stock Notification: $productName is running low. Current stock: $currentStock',
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'admin_channel',
+        'Admin Notifications',
+        channelDescription: 'Notifications for administrators',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+        enableVibration: true,
+        enableLights: true,
+        color: Color(0xFFF44336), // Red for alerts
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
     );
-    // TODO: Implement local notification when flutter_local_notifications is added
+
+    await showLocalNotification(
+      id: productName.hashCode,
+      title: '⚠️ Low Stock Alert',
+      body: '$productName is running low. Current stock: $currentStock',
+      payload: 'low_stock:$productName',
+      notificationDetails: notificationDetails,
+    );
+  }
+
+  // Show scheduled notification
+  Future<void> showScheduledNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+    String? payload,
+    NotificationDetails? notificationDetails,
+  }) async {
+    try {
+      await _localNotifications.zonedSchedule(
+        id,
+        title,
+        body,
+        scheduledDate,
+        notificationDetails ?? _getDefaultNotificationDetails(),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: payload,
+      );
+    } catch (e) {
+      print('Error scheduling notification: $e');
+    }
+  }
+
+  // Cancel notification
+  Future<void> cancelNotification(int id) async {
+    await _localNotifications.cancel(id);
+  }
+
+  // Cancel all notifications
+  Future<void> cancelAllNotifications() async {
+    await _localNotifications.cancelAll();
+  }
+
+  // Get pending notifications
+  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
+    return await _localNotifications.pendingNotificationRequests();
   }
 
   // Get notification settings
@@ -171,5 +428,71 @@ class NotificationService {
   // Subscribe to admin notifications
   Future<void> subscribeToAdminNotifications(String adminId) async {
     await _firebaseMessaging.subscribeToTopic('admin_$adminId');
+  }
+
+  // Show welcome notification for new users
+  Future<void> showWelcomeNotification(String userName) async {
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'welcome_channel',
+        'Welcome Messages',
+        channelDescription: 'Welcome notifications for new users',
+        importance: Importance.high,
+        priority: Priority.high,
+        showWhen: true,
+        enableVibration: true,
+        enableLights: true,
+        color: Color(0xFF9C27B0), // Purple for welcome
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
+
+    await showLocalNotification(
+      id: 'welcome_${userName.hashCode}'.hashCode,
+      title: '🎉 Welcome to Ashley\'s Treats!',
+      body: 'Hi $userName! We\'re so excited to have you here. Start exploring our delicious treats!',
+      payload: 'welcome:$userName',
+      notificationDetails: notificationDetails,
+    );
+  }
+
+  // Show reminder notification
+  Future<void> showReminderNotification({
+    required String title,
+    required String body,
+    required DateTime reminderTime,
+    String? payload,
+  }) async {
+    await showScheduledNotification(
+      id: title.hashCode,
+      title: title,
+      body: body,
+      scheduledDate: reminderTime,
+      payload: payload,
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          'reminder_channel',
+          'Reminders',
+          channelDescription: 'Reminder notifications',
+          importance: Importance.medium,
+          priority: Priority.medium,
+          showWhen: true,
+          enableVibration: true,
+          enableLights: true,
+          color: Color(0xFF607D8B), // Blue-grey for reminders
+          icon: '@mipmap/ic_launcher',
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+      ),
+    );
   }
 }
