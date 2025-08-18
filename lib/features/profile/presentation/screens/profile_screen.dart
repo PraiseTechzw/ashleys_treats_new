@@ -155,15 +155,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             color: AppColors.secondary.withValues(alpha: 0.7),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Quick stats row
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            _buildQuickStat('Orders', '12', Icons.shopping_bag_rounded),
-                            _buildQuickStat('Favorites', '8', Icons.favorite_rounded),
+                            _buildQuickStat(
+                              'Orders',
+                              '12',
+                              Icons.shopping_bag_rounded,
+                            ),
+                            _buildQuickStat(
+                              'Favorites',
+                              '8',
+                              Icons.favorite_rounded,
+                            ),
                             _buildQuickStat('Reviews', '5', Icons.star_rounded),
                           ],
                         ),
@@ -171,120 +179,125 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     ),
                   ),
 
-              // Profile options
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Section header
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        'Account Settings',
-                        style: AppTheme.girlishHeadingStyle.copyWith(
-                          fontSize: 22,
-                          color: AppColors.secondary,
-                          fontWeight: FontWeight.w600,
+                  // Profile options
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Section header
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            'Account Settings',
+                            style: AppTheme.girlishHeadingStyle.copyWith(
+                              fontSize: 22,
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                      ),
+                        _buildProfileOption(
+                          icon: Icons.person_outline,
+                          title: 'Edit Profile',
+                          subtitle: 'Update your personal information',
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const EditProfileScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildProfileOption(
+                          icon: Icons.location_on_outlined,
+                          title: 'Delivery Address',
+                          subtitle: 'Manage your delivery locations',
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const AddressManagementScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildProfileOption(
+                          icon: Icons.payment_outlined,
+                          title: 'Payment Methods',
+                          subtitle: 'Manage your payment options',
+                          onTap: () {
+                            // TODO: Navigate to payment methods
+                          },
+                        ),
+                        _buildProfileOption(
+                          icon: Icons.notifications_outlined,
+                          title: 'Notifications',
+                          subtitle: 'Customize your notification preferences',
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const NotificationSettingsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildProfileOption(
+                          icon: Icons.security_outlined,
+                          title: 'Privacy & Security',
+                          subtitle: 'Manage your account security',
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const PrivacySecurityScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildProfileOption(
+                          icon: Icons.help_outline,
+                          title: 'Help & Support',
+                          subtitle: 'Get help and contact support',
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const HelpSupportScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildProfileOption(
+                          icon: Icons.info_outline,
+                          title: 'About',
+                          subtitle: 'Learn more about Ashley\'s Treats',
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const AboutScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                    _buildProfileOption(
-                      icon: Icons.person_outline,
-                      title: 'Edit Profile',
-                      subtitle: 'Update your personal information',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const EditProfileScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildProfileOption(
-                      icon: Icons.location_on_outlined,
-                      title: 'Delivery Address',
-                      subtitle: 'Manage your delivery locations',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const AddressManagementScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildProfileOption(
-                      icon: Icons.payment_outlined,
-                      title: 'Payment Methods',
-                      subtitle: 'Manage your payment options',
-                      onTap: () {
-                        // TODO: Navigate to payment methods
-                      },
-                    ),
-                    _buildProfileOption(
-                      icon: Icons.notifications_outlined,
-                      title: 'Notifications',
-                      subtitle: 'Customize your notification preferences',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const NotificationSettingsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildProfileOption(
-                      icon: Icons.security_outlined,
-                      title: 'Privacy & Security',
-                      subtitle: 'Manage your account security',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const PrivacySecurityScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildProfileOption(
-                      icon: Icons.help_outline,
-                      title: 'Help & Support',
-                      subtitle: 'Get help and contact support',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const HelpSupportScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildProfileOption(
-                      icon: Icons.info_outline,
-                      title: 'About',
-                      subtitle: 'Learn more about Ashley\'s Treats',
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const AboutScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
+                  ),
 
-              // Logout section
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Divider(height: 32),
-                    const LogoutButton(),
-                    const SizedBox(height: 32),
-                  ],
-                ),
+                  // Logout section
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const Divider(height: 32),
+                        const LogoutButton(),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -297,17 +310,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       decoration: BoxDecoration(
         color: AppColors.surface.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: AppColors.primary,
-            size: 24,
-          ),
+          Icon(icon, color: AppColors.primary, size: 24),
           const SizedBox(height: 8),
           Text(
             value,
