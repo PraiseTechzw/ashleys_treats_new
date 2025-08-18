@@ -34,3 +34,12 @@
 
 # Keep your app's main classes
 -keep class com.appixia.ashleys_treats_new.** { *; }
+
+# Play Core rules
+-keep class com.google.android.play.core.** { *; }
+-keep class com.google.android.play.core.tasks.** { *; }
+-keep interface com.google.android.play.core.tasks.** { *; }
+
+# Additional Flutter rules for release builds
+-keep class io.flutter.embedding.engine.** { *; }
+-keep class io.flutter.embedding.engine.deferredcomponents.** { *; }
