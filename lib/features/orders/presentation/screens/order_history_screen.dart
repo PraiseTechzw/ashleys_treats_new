@@ -378,44 +378,46 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
   Widget _buildEmptyState() {
     return FadeTransition(
       opacity: _fadeAnimation,
-      child: Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const SizedBox(height: 20),
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: AppColors.cardColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Lottie.asset(
                 'assets/animations/empty.json',
-                width: 120,
-                height: 120,
+                width: 100,
+                height: 100,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Text(
               'No orders found',
               style: AppTheme.girlishHeadingStyle.copyWith(
-                fontSize: 24,
+                fontSize: 22,
                 color: AppColors.secondary.withOpacity(0.7),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
               _selectedFilter == 'all'
                   ? 'Your order history will appear here once you place your first order'
                   : 'No orders with status "${_selectedFilter.replaceAll('_', ' ')}" found',
               style: AppTheme.elegantBodyStyle.copyWith(
-                fontSize: 16,
+                fontSize: 15,
                 color: AppColors.secondary.withOpacity(0.5),
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -433,22 +435,22 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                   Icon(
                     Icons.shopping_bag_outlined,
                     color: AppColors.primary,
-                    size: 48,
+                    size: 40,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Text(
                     'Ready to order?',
                     style: AppTheme.elegantBodyStyle.copyWith(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppColors.secondary,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     'Browse our delicious treats and place your first order!',
                     style: AppTheme.elegantBodyStyle.copyWith(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: AppColors.secondary.withOpacity(0.7),
                     ),
                     textAlign: TextAlign.center,
@@ -456,6 +458,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                 ],
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -469,8 +472,8 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
         children: [
           Lottie.asset(
             'assets/animations/loading.json',
-            width: 120,
-            height: 120,
+            width: 100,
+            height: 100,
           ),
           const SizedBox(height: 20),
           Text(

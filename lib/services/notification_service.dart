@@ -1,6 +1,9 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -8,7 +11,8 @@ class NotificationService {
   NotificationService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
   bool _isInitialized = false;
 
@@ -17,6 +21,13 @@ class NotificationService {
 
     // Initialize local notifications
     await _initializeLocalNotifications();
+
+    // Initialize timezone (for scheduled notifications)
+    try {
+      initializeTimeZones();
+    } catch (_) {
+      // ignore if already initialized
+    }
 
     // Request permissions
     await _requestPermissions();
@@ -35,16 +46,17 @@ class NotificationService {
     // iOS initialization
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
     // Combined initialization settings
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+        );
 
     // Initialize the plugin
     await _localNotifications.initialize(
@@ -55,12 +67,9 @@ class NotificationService {
     // Request permissions for iOS
     await _localNotifications
         .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
+          IOSFlutterLocalNotificationsPlugin
+        >()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
   }
 
   void _onNotificationTapped(NotificationResponse response) {
@@ -163,18 +172,20 @@ class NotificationService {
 
   // Get default notification details
   NotificationDetails _getDefaultNotificationDetails() {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'ashleys_treats_channel',
-      'Ashley\'s Treats Notifications',
-      channelDescription: 'Notifications for orders, promotions, and updates',
-      importance: Importance.high,
-      priority: Priority.high,
-      showWhen: true,
-      enableVibration: true,
-      enableLights: true,
-      color: Color(0xFFE91E63), // Pink color matching app theme
-      icon: '@mipmap/ic_launcher',
-    );
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'ashleys_treats_channel',
+          'Ashley\'s Treats Notifications',
+          channelDescription:
+              'Notifications for orders, promotions, and updates',
+          importance: Importance.high,
+          priority: Priority.high,
+          showWhen: true,
+          enableVibration: true,
+          enableLights: true,
+          color: Color(0xFFE91E63), // Pink color matching app theme
+          icon: '@mipmap/ic_launcher',
+        );
 
     const DarwinNotificationDetails iOSDetails = DarwinNotificationDetails(
       presentAlert: true,
@@ -182,10 +193,7 @@ class NotificationService {
       presentSound: true,
     );
 
-    return const NotificationDetails(
-      android: androidDetails,
-      iOS: iOSDetails,
-    );
+    return const NotificationDetails(android: androidDetails, iOS: iOSDetails);
   }
 
   // Show order status notification
@@ -251,7 +259,8 @@ class NotificationService {
     await showLocalNotification(
       id: orderNumber.hashCode,
       title: 'Order Confirmed! 🎉',
-      body: 'Order #$orderNumber has been confirmed for \$${total.toStringAsFixed(2)}',
+      body:
+          'Order #$orderNumber has been confirmed for \$${total.toStringAsFixed(2)}',
       payload: 'order_confirmation:$orderNumber',
       notificationDetails: notificationDetails,
     );
@@ -369,15 +378,17 @@ class NotificationService {
     NotificationDetails? notificationDetails,
   }) async {
     try {
+      final tz.TZDateTime tzScheduledDate = tz.TZDateTime.from(
+        scheduledDate,
+        tz.local,
+      );
       await _localNotifications.zonedSchedule(
         id,
         title,
         body,
-        scheduledDate,
+        tzScheduledDate,
         notificationDetails ?? _getDefaultNotificationDetails(),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
         payload: payload,
       );
     } catch (e) {
@@ -455,7 +466,8 @@ class NotificationService {
     await showLocalNotification(
       id: 'welcome_${userName.hashCode}'.hashCode,
       title: '🎉 Welcome to Ashley\'s Treats!',
-      body: 'Hi $userName! We\'re so excited to have you here. Start exploring our delicious treats!',
+      body:
+          'Hi $userName! We\'re so excited to have you here. Start exploring our delicious treats!',
       payload: 'welcome:$userName',
       notificationDetails: notificationDetails,
     );
@@ -479,8 +491,8 @@ class NotificationService {
           'reminder_channel',
           'Reminders',
           channelDescription: 'Reminder notifications',
-          importance: Importance.medium,
-          priority: Priority.medium,
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
           showWhen: true,
           enableVibration: true,
           enableLights: true,

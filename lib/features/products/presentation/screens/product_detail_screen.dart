@@ -736,6 +736,8 @@ class _ProductDetailsBottomSheetState extends State<ProductDetailsBottomSheet>
                           ],
 
                           const SizedBox(height: 20),
+                          // Add bottom padding to prevent Add to Cart button from covering content
+                          const SizedBox(height: 100),
                         ],
                       ),
                     ),
