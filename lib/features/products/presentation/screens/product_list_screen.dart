@@ -30,6 +30,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  bool _isSearching = false;
+
   @override
   void initState() {
     super.initState();
@@ -62,7 +66,30 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  void _performSearch(String query) {
+    setState(() {
+      _searchQuery = query;
+      _isSearching = query.isNotEmpty;
+    });
+
+    if (query.isNotEmpty) {
+      ref.read(productProvider.notifier).searchProducts(query);
+    } else {
+      ref.read(productProvider.notifier).refreshProducts();
+    }
+  }
+
+  void _clearSearch() {
+    setState(() {
+      _searchQuery = '';
+      _isSearching = false;
+      _searchController.clear();
+    });
+    ref.read(productProvider.notifier).refreshProducts();
   }
 
   void _addToCart(ProductModel product) {
@@ -83,15 +110,15 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
   }
 
   void _onCartTap() {
-    // TODO: Navigate to cart screen
+    Navigator.pushNamed(context, '/cart');
   }
 
   void _onLocationTap() {
-    // TODO: Show location picker
+    _showLocationPicker();
   }
 
   void _onProfileTap() {
-    // TODO: Navigate to profile screen
+    Navigator.pushNamed(context, '/profile');
   }
 
   void _onViewAllFeatured() {
@@ -124,6 +151,268 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const CategoriesOverviewScreen()),
+    );
+  }
+
+  void _showLocationPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Select Location',
+                    style: AppTheme.girlishHeadingStyle.copyWith(
+                      fontSize: 20,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildLocationOption('Harare', 'Zimbabwe'),
+                  _buildLocationOption('Bulawayo', 'Zimbabwe'),
+                  _buildLocationOption('Chitungwiza', 'Zimbabwe'),
+                  _buildLocationOption('Mutare', 'Zimbabwe'),
+                  _buildLocationOption('Epworth', 'Zimbabwe'),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Close'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationOption(String city, String country) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Icon(Icons.location_on, color: AppColors.accent),
+        title: Text(
+          city,
+          style: AppTheme.elegantBodyStyle.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Text(
+          country,
+          style: AppTheme.elegantBodyStyle.copyWith(
+            fontSize: 12,
+            color: AppColors.secondary.withOpacity(0.7),
+          ),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: AppColors.secondary.withOpacity(0.5),
+        ),
+        onTap: () {
+          // Update location in app state
+          // TODO: Implement location state management
+          Navigator.pop(context);
+          ToastManager.showSuccess(context, 'Location updated to $city');
+        },
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        tileColor: AppColors.cardColor.withOpacity(0.1),
+      ),
+    );
+  }
+
+  void _handleBannerTap() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          Icons.local_offer,
+                          color: AppColors.accent,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          'Special Offers & Promotions',
+                          style: AppTheme.girlishHeadingStyle.copyWith(
+                            fontSize: 20,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  _buildPromoItem(
+                    '50% Off First Order',
+                    'Use code: SWEET50',
+                    'Valid for new customers only',
+                    Icons.percent,
+                    AppColors.accent,
+                  ),
+                  _buildPromoItem(
+                    'Free Delivery',
+                    'On orders over \$25',
+                    'Standard delivery included',
+                    Icons.local_shipping,
+                    Colors.green,
+                  ),
+                  _buildPromoItem(
+                    'Loyalty Points',
+                    'Earn points on every order',
+                    'Redeem for discounts',
+                    Icons.stars,
+                    AppColors.primary,
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/products');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Shop Now'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPromoItem(
+    String title,
+    String subtitle,
+    String description,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTheme.elegantBodyStyle.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: AppTheme.elegantBodyStyle.copyWith(
+                    fontSize: 14,
+                    color: AppColors.secondary,
+                  ),
+                ),
+                Text(
+                  description,
+                  style: AppTheme.elegantBodyStyle.copyWith(
+                    fontSize: 12,
+                    color: AppColors.secondary.withOpacity(0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -206,9 +495,43 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
                       banners: _promotionalBanners,
                       height: 220,
                       onBannerTap: () {
-                        // TODO: Handle banner tap
+                        _handleBannerTap();
                       },
                     ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Search Bar
+            SliverToBoxAdapter(
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: _buildSearchBar(),
+                  ),
+                ),
+              ),
+            ),
+
+            // Quick Actions
+            SliverToBoxAdapter(
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: _buildQuickActions(),
                   ),
                 ),
               ),
@@ -579,5 +902,163 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen>
       default:
         return Icons.cake;
     }
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: _performSearch,
+        decoration: InputDecoration(
+          hintText: 'Search for treats...',
+          hintStyle: AppTheme.elegantBodyStyle.copyWith(
+            color: AppColors.secondary.withOpacity(0.5),
+          ),
+          prefixIcon: Icon(
+            Icons.search,
+            color: AppColors.secondary.withOpacity(0.7),
+          ),
+          suffixIcon: _isSearching
+              ? IconButton(
+                  onPressed: _clearSearch,
+                  icon: Icon(
+                    Icons.clear,
+                    color: AppColors.secondary.withOpacity(0.7),
+                  ),
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+        ),
+        style: AppTheme.elegantBodyStyle.copyWith(fontSize: 16),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildQuickActionButton(
+            'New Arrivals',
+            Icons.new_releases,
+            AppColors.accent,
+            () => _filterByNewArrivals(),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildQuickActionButton(
+            'Best Sellers',
+            Icons.star,
+            AppColors.primary,
+            () => _filterByBestSellers(),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildQuickActionButton(
+            'On Sale',
+            Icons.local_offer,
+            Colors.orange,
+            () => _filterByOnSale(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActionButton(
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTheme.elegantBodyStyle.copyWith(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _filterByNewArrivals() {
+    final products = ref.read(productProvider).products;
+    final recentProducts = products.where((product) {
+      return product.createdAt.isAfter(
+        DateTime.now().subtract(const Duration(days: 7)),
+      );
+    }).toList();
+    ref
+        .read(productProvider.notifier)
+        .updateFilteredProducts(recentProducts, 'New Arrivals');
+    ToastManager.showSuccess(context, 'Showing new arrivals');
+  }
+
+  void _filterByBestSellers() {
+    final products = ref.read(productProvider).products;
+    final bestSellers = products
+        .where((product) {
+          return product.category == 'Cupcakes' || product.category == 'Cakes';
+        })
+        .take(8)
+        .toList();
+    ref
+        .read(productProvider.notifier)
+        .updateFilteredProducts(bestSellers, 'Best Sellers');
+    ToastManager.showSuccess(context, 'Showing best sellers');
+  }
+
+  void _filterByOnSale() {
+    final products = ref.read(productProvider).products;
+    final onSaleProducts = products
+        .where((product) {
+          return product.price < 5.0;
+        })
+        .take(8)
+        .toList();
+    ref
+        .read(productProvider.notifier)
+        .updateFilteredProducts(onSaleProducts, 'On Sale');
+    ToastManager.showSuccess(context, 'Showing products on sale');
   }
 }

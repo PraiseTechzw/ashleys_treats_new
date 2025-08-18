@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../data/models/order.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> order;
+  final Order order;
   const OrderDetailScreen({super.key, required this.order});
 
   @override
@@ -66,7 +66,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         title: Text(
-          'Order #${order['orderNo']}',
+          'Order #${order.orderNumber ?? order.id}',
           style: AppTheme.girlishHeadingStyle.copyWith(
             fontSize: 22,
             color: AppColors.secondary,
@@ -100,12 +100,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     width: 60,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: _statusColor(order['status']).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(30),
+                      color: _statusColor(order.status).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Icon(
-                      _statusIcon(order['status']),
-                      color: _statusColor(order['status']),
+                      _statusIcon(order.status),
+                      color: _statusColor(order.status),
                       size: 30,
                     ),
                   ),
@@ -115,288 +115,311 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Order Status',
+                          _getStatusText(order.status),
+                          style: AppTheme.girlishHeadingStyle.copyWith(
+                            fontSize: 20,
+                            color: AppColors.secondary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Order placed on ${_formatDate(order.createdAt)}',
                           style: AppTheme.elegantBodyStyle.copyWith(
                             fontSize: 14,
                             color: AppColors.secondary.withOpacity(0.7),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _getStatusText(order['status']),
-                          style: AppTheme.elegantBodyStyle.copyWith(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: _statusColor(order['status']),
-                          ),
-                        ),
-                        if (order['status'].toLowerCase() == 'in transit')
-                          Text(
-                            'Estimated delivery: 15-20 minutes',
-                            style: AppTheme.elegantBodyStyle.copyWith(
-                              fontSize: 12,
-                              color: AppColors.secondary.withOpacity(0.6),
-                            ),
-                          ),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
 
-            // Order Details
+            const SizedBox(height: 20),
+
+            // Order Items
             Text(
-              'Order Details',
+              'Order Items',
               style: AppTheme.girlishHeadingStyle.copyWith(
                 fontSize: 20,
                 color: AppColors.secondary,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  _buildDetailRow('Order Number', '#${order['orderNo']}'),
-                  _buildDetailRow(
-                    'Date',
-                    order['date'].toString().substring(0, 10),
-                  ),
-                  _buildDetailRow(
-                    'Total',
-                    '\$${order['total'].toStringAsFixed(2)}',
-                  ),
-                  _buildDetailRow(
-                    'Delivery Time',
-                    order['deliveryTime'] ?? 'Not specified',
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Items
-            Text(
-              'Items',
-              style: AppTheme.girlishHeadingStyle.copyWith(
-                fontSize: 20,
-                color: AppColors.secondary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListView.separated(
+              child: ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: order['items'].length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemCount: order.items.length,
                 itemBuilder: (context, index) {
-                  final item = order['items'][index];
-                  return ListTile(
-                    leading: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Icon(
-                        Icons.cake,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                    ),
-                    title: Text(
-                      item,
-                      style: AppTheme.elegantBodyStyle.copyWith(
-                        fontSize: 16,
-                        color: AppColors.secondary,
-                      ),
-                    ),
-                    trailing: Text(
-                      '\$${(order['total'] / order['items'].length).toStringAsFixed(2)}',
-                      style: AppTheme.elegantBodyStyle.copyWith(
-                        fontSize: 14,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  final item = order.items[index];
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: item.imageUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    item.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Icon(
+                                        Icons.cake_rounded,
+                                        color: AppColors.primary,
+                                        size: 24,
+                                      );
+                                    },
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.cake_rounded,
+                                  color: AppColors.primary,
+                                  size: 24,
+                                ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.productName,
+                                style: AppTheme.elegantBodyStyle.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.secondary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Qty: ${item.quantity}',
+                                style: AppTheme.elegantBodyStyle.copyWith(
+                                  fontSize: 14,
+                                  color: AppColors.secondary.withOpacity(0.7),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          '\$${(item.price * item.quantity).toStringAsFixed(2)}',
+                          style: AppTheme.girlishHeadingStyle.copyWith(
+                            fontSize: 16,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 24),
 
-            // Delivery Information
+            const SizedBox(height: 20),
+
+            // Order Summary
             Text(
-              'Delivery Information',
+              'Order Summary',
               style: AppTheme.girlishHeadingStyle.copyWith(
                 fontSize: 20,
                 color: AppColors.secondary,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
-                  _buildDetailRow(
-                    'Address',
-                    order['deliveryAddress'] ?? 'Not specified',
+                  _buildSummaryRow(
+                    'Subtotal',
+                    '\$${order.totalAmount.toStringAsFixed(2)}',
                   ),
-                  _buildDetailRow('Phone', '+1 (555) 123-4567'),
-                  _buildDetailRow(
-                    'Delivery Time',
-                    order['deliveryTime'] ?? 'Not specified',
+                  const SizedBox(height: 12),
+                  _buildSummaryRow(
+                    'Delivery Fee',
+                    '\$${order.deliveryFee.toStringAsFixed(2)}',
+                  ),
+                  const Divider(height: 24),
+                  _buildSummaryRow(
+                    'Total',
+                    '\$${order.finalTotal.toStringAsFixed(2)}',
+                    isTotal: true,
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // Action Buttons
-            if (order['status'].toLowerCase() == 'pending')
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement cancel order functionality
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Cancel order functionality coming soon!',
-                        ),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(
-                    'Cancel Order',
-                    style: AppTheme.buttonTextStyle.copyWith(fontSize: 16),
-                  ),
+            // Delivery Information
+            if (order.deliveryAddress != null) ...[
+              Text(
+                'Delivery Information',
+                style: AppTheme.girlishHeadingStyle.copyWith(
+                  fontSize: 20,
+                  color: AppColors.secondary,
                 ),
               ),
-
-            if (order['status'].toLowerCase() == 'delivered')
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () {
-                    // TODO: Implement reorder functionality
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Reorder functionality coming soon!'),
-                      ),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: BorderSide(color: AppColors.primary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(
-                    'Reorder',
-                    style: AppTheme.buttonTextStyle.copyWith(fontSize: 16),
-                  ),
-                ),
-              ),
-
-            const SizedBox(height: 24),
-
-            // Delivery Animation
-            if (order['status'].toLowerCase() == 'in transit')
+              const SizedBox(height: 12),
               Container(
-                width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.cardColor.withOpacity(0.1),
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    Lottie.asset(
-                      'assets/animations/Delivery.json',
-                      height: 80,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Your order is on the way!',
-                      style: AppTheme.elegantBodyStyle.copyWith(
-                        fontSize: 16,
-                        color: AppColors.secondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Track your delivery in real-time',
-                      style: AppTheme.elegantBodyStyle.copyWith(
-                        fontSize: 14,
-                        color: AppColors.secondary.withOpacity(0.7),
-                      ),
-                      textAlign: TextAlign.center,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
                     ),
                   ],
                 ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (order.customerName != null) ...[
+                      _buildInfoRow('Name', order.customerName!),
+                      const SizedBox(height: 12),
+                    ],
+                    if (order.customerPhone != null) ...[
+                      _buildInfoRow('Phone', order.customerPhone!),
+                      const SizedBox(height: 12),
+                    ],
+                    _buildInfoRow('Address', order.deliveryAddress!),
+                    if (order.deliveryTime != null) ...[
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        'Delivery Time',
+                        _formatDateTime(order.deliveryTime!),
+                      ),
+                    ],
+                  ],
+                ),
               ),
+            ],
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
+
+            // Payment Information
+            Text(
+              'Payment Information',
+              style: AppTheme.girlishHeadingStyle.copyWith(
+                fontSize: 20,
+                color: AppColors.secondary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: _buildInfoRow('Payment Method', order.paymentMethod),
+            ),
+
+            const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
+  Widget _buildSummaryRow(String label, String value, {bool isTotal = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: AppTheme.elegantBodyStyle.copyWith(
+            fontSize: isTotal ? 18 : 16,
+            fontWeight: isTotal ? FontWeight.w600 : FontWeight.normal,
+            color: AppColors.secondary,
+          ),
+        ),
+        Text(
+          value,
+          style: AppTheme.girlishHeadingStyle.copyWith(
+            fontSize: isTotal ? 20 : 16,
+            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
+            color: isTotal ? AppColors.primary : AppColors.secondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(
             label,
             style: AppTheme.elegantBodyStyle.copyWith(
               fontSize: 14,
               color: AppColors.secondary.withOpacity(0.7),
             ),
           ),
-          Text(
+        ),
+        Expanded(
+          child: Text(
             value,
             style: AppTheme.elegantBodyStyle.copyWith(
               fontSize: 14,
-              color: AppColors.secondary,
               fontWeight: FontWeight.w500,
+              color: AppColors.secondary,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 }

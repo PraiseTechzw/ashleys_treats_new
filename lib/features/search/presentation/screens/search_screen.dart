@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/product_card.dart';
 import '../../../../core/widgets/custom_toast.dart';
+import '../../../../services/search_history_service.dart';
 import '../../../products/presentation/providers/product_provider.dart';
 import '../../../products/data/models/product_model.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
@@ -24,17 +25,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   List<ProductModel> _searchResults = [];
   bool _isSearching = false;
   String _selectedCategory = 'All';
   String _sortBy = 'relevance';
   bool _sortAscending = true;
 
+  final SearchHistoryService _searchHistoryService = SearchHistoryService();
+  List<String> _recentSearches = [];
+  List<String> _trendingSearches = [];
+
   @override
   void initState() {
     super.initState();
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -44,16 +49,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     _fadeController.forward();
     _slideController.forward();
+
+    // Load search history
+    _loadSearchHistory();
   }
 
   @override
@@ -64,7 +73,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     super.dispose();
   }
 
-  void _performSearch(String query) {
+  Future<void> _loadSearchHistory() async {
+    try {
+      final recentSearches = await _searchHistoryService.getRecentSearches();
+      final trendingSearches = await _searchHistoryService
+          .getTrendingSearches();
+
+      setState(() {
+        _recentSearches = recentSearches;
+        _trendingSearches = trendingSearches;
+      });
+    } catch (e) {
+      print('Error loading search history: $e');
+    }
+  }
+
+  void _performSearch(String query) async {
     if (query.trim().isEmpty) {
       setState(() {
         _searchResults = [];
@@ -72,6 +96,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       });
       return;
     }
+
+    // Add to search history
+    await _searchHistoryService.addSearchTerm(query.trim());
 
     setState(() {
       _isSearching = true;
@@ -83,8 +110,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       final results = allProducts.where((product) {
         final searchQuery = query.toLowerCase();
         return product.name.toLowerCase().contains(searchQuery) ||
-               product.description.toLowerCase().contains(searchQuery) ||
-               product.category.toLowerCase().contains(searchQuery);
+            product.description.toLowerCase().contains(searchQuery) ||
+            product.category.toLowerCase().contains(searchQuery);
       }).toList();
 
       // Apply category filter
@@ -105,19 +132,25 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   void _sortResults(List<ProductModel> results) {
     switch (_sortBy) {
       case 'name':
-        results.sort((a, b) => _sortAscending 
-          ? a.name.compareTo(b.name) 
-          : b.name.compareTo(a.name));
+        results.sort(
+          (a, b) => _sortAscending
+              ? a.name.compareTo(b.name)
+              : b.name.compareTo(a.name),
+        );
         break;
       case 'price':
-        results.sort((a, b) => _sortAscending 
-          ? a.price.compareTo(b.price) 
-          : b.price.compareTo(a.price));
+        results.sort(
+          (a, b) => _sortAscending
+              ? a.price.compareTo(b.price)
+              : b.price.compareTo(a.price),
+        );
         break;
       case 'category':
-        results.sort((a, b) => _sortAscending 
-          ? a.category.compareTo(b.category) 
-          : b.category.compareTo(a.category));
+        results.sort(
+          (a, b) => _sortAscending
+              ? a.category.compareTo(b.category)
+              : b.category.compareTo(a.category),
+        );
         break;
       case 'relevance':
       default:
@@ -174,17 +207,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           children: [
             // Enhanced Search Header
             _buildSearchHeader(),
-            
+
             // Category Filter Chips
-            if (_searchController.text.isNotEmpty) _buildCategoryFilter(categories),
-            
+            if (_searchController.text.isNotEmpty)
+              _buildCategoryFilter(categories),
+
             // Sort Options
             if (_searchResults.isNotEmpty) _buildSortOptions(),
-            
+
             // Search Content
-            Expanded(
-              child: _buildSearchContent(productState),
-            ),
+            Expanded(child: _buildSearchContent(productState)),
           ],
         ),
       ),
@@ -355,7 +387,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         itemBuilder: (context, index) {
           final category = categories[index];
           final isSelected = _selectedCategory == category;
-          
+
           return GestureDetector(
             onTap: () => _onCategoryChanged(category),
             child: Container(
@@ -515,7 +547,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildSearchSuggestions(ProductState productState) {
     final categories = ref.watch(categoriesProvider);
-    
+
     return SlideTransition(
       position: _slideAnimation,
       child: FadeTransition(
@@ -528,15 +560,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               _buildSectionHeader('Popular Categories', Icons.category_rounded),
               const SizedBox(height: 16),
               _buildCategoryGrid(categories),
-              
+
               const SizedBox(height: 32),
-              
-              _buildSectionHeader('Quick Searches', Icons.trending_up_rounded),
+
+              _buildSectionHeader(
+                'Trending Searches',
+                Icons.trending_up_rounded,
+              ),
               const SizedBox(height: 16),
-              _buildQuickSearchChips(),
-              
+              _buildTrendingSearches(),
+
               const SizedBox(height: 32),
-              
+
               _buildSectionHeader('Recent Searches', Icons.history_rounded),
               const SizedBox(height: 16),
               _buildRecentSearches(),
@@ -556,11 +591,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            color: AppColors.primary,
-            size: 20,
-          ),
+          child: Icon(icon, color: AppColors.primary, size: 20),
         ),
         const SizedBox(width: 12),
         Text(
@@ -589,7 +620,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       itemBuilder: (context, index) {
         final category = categories[index];
         if (category == 'All') return const SizedBox.shrink();
-        
+
         return GestureDetector(
           onTap: () {
             _searchController.text = category;
@@ -628,22 +659,39 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
-  Widget _buildQuickSearchChips() {
-    final quickSearches = [
-      'Chocolate',
-      'Vanilla',
-      'Strawberry',
-      'Birthday',
-      'Wedding',
-      'Gluten Free',
-      'Vegan',
-      'Nut Free'
-    ];
-    
+  Widget _buildTrendingSearches() {
+    if (_trendingSearches.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.trending_up_rounded,
+              color: AppColors.secondary.withValues(alpha: 0.5),
+              size: 48,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No trending searches yet',
+              style: AppTheme.elegantBodyStyle.copyWith(
+                color: AppColors.secondary.withValues(alpha: 0.6),
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: quickSearches.map((search) {
+      children: _trendingSearches.map((search) {
         return GestureDetector(
           onTap: () {
             _searchController.text = search;
@@ -673,22 +721,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildRecentSearches() {
-    // Mock recent searches - in real app, this would come from storage
-    final recentSearches = [
-      'Chocolate Cupcake',
-      'Birthday Cake',
-      'Vanilla Cookie'
-    ];
-    
-    if (recentSearches.isEmpty) {
+    if (_recentSearches.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.1),
-          ),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
         ),
         child: Column(
           children: [
@@ -709,9 +748,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         ),
       );
     }
-    
+
     return Column(
-      children: recentSearches.map((search) {
+      children: _recentSearches.map((search) {
         return GestureDetector(
           onTap: () {
             _searchController.text = search;
@@ -762,11 +801,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Lottie.asset(
-            'assets/animations/loading.json',
-            width: 80,
-            height: 80,
-          ),
+          Lottie.asset('assets/animations/loading.json', width: 80, height: 80),
           const SizedBox(height: 16),
           Text(
             'Searching...',
@@ -828,7 +863,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
               child: Text(
                 'Clear Search',
@@ -867,7 +905,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 ),
               ),
             ),
-            
+
             // Results grid
             Expanded(
               child: GridView.builder(

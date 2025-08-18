@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/screens/logout_button.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -87,7 +88,11 @@ class ProfileScreen extends ConsumerWidget {
                       title: 'Edit Profile',
                       subtitle: 'Update your personal information',
                       onTap: () {
-                        // TODO: Navigate to edit profile
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const EditProfileScreen(),
+                          ),
+                        );
                       },
                     ),
                     _buildProfileOption(

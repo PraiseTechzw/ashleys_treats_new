@@ -106,6 +106,43 @@ class ProductNotifier extends StateNotifier<ProductState> {
     await _loadProducts();
   }
 
+  Future<void> searchProducts(String query) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+      
+      if (query.isEmpty) {
+        await _loadProducts();
+        return;
+      }
+      
+      final allProducts = await _productRepository.getAllProducts();
+      final searchResults = allProducts.where((product) =>
+        product.name.toLowerCase().contains(query.toLowerCase()) ||
+        product.category.toLowerCase().contains(query.toLowerCase()) ||
+        product.description.toLowerCase().contains(query.toLowerCase())
+      ).toList();
+      
+      state = state.copyWith(
+        productsByCategory: searchResults,
+        selectedCategory: 'Search Results',
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to search products: ${e.toString()}',
+      );
+    }
+  }
+
+  void updateFilteredProducts(List<ProductModel> products, String category) {
+    state = state.copyWith(
+      productsByCategory: products,
+      selectedCategory: category,
+      isLoading: false,
+    );
+  }
+
   List<String> get categories {
     final categories = state.products.map((product) => product.category).toSet().toList();
     categories.insert(0, 'All');

@@ -4,6 +4,9 @@ import 'package:lottie/lottie.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/custom_toast.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../data/order_provider.dart';
+import '../../data/models/order.dart';
 import 'order_detail_screen.dart';
 
 class OrderHistoryScreen extends ConsumerStatefulWidget {
@@ -22,54 +25,6 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
 
   String _selectedFilter = 'all';
   bool _isRefreshing = false;
-
-  // Mock order data - in real app, this would come from a provider
-  final List<Map<String, dynamic>> _mockOrders = [
-    {
-      'id': '1',
-      'orderNo': 'AT001',
-      'date': DateTime.now().subtract(const Duration(days: 2)),
-      'status': 'delivered',
-      'total': 45.50,
-      'items': [
-        'Chocolate Cupcake x2',
-        'Vanilla Cookie x3',
-        'Birthday Cake x1',
-      ],
-      'deliveryAddress': '123 Sweet Street, Harare, Zimbabwe',
-      'deliveryTime': '2:30 PM',
-    },
-    {
-      'id': '2',
-      'orderNo': 'AT002',
-      'date': DateTime.now().subtract(const Duration(days: 5)),
-      'status': 'delivered',
-      'total': 32.00,
-      'items': ['Strawberry Cupcake x4', 'Brownie x2'],
-      'deliveryAddress': '456 Treat Avenue, Harare, Zimbabwe',
-      'deliveryTime': '1:15 PM',
-    },
-    {
-      'id': '3',
-      'orderNo': 'AT003',
-      'date': DateTime.now().subtract(const Duration(days: 1)),
-      'status': 'in transit',
-      'total': 28.75,
-      'items': ['Chocolate Chip Cookie x5', 'Muffin x2'],
-      'deliveryAddress': '789 Dessert Road, Harare, Zimbabwe',
-      'deliveryTime': '3:45 PM',
-    },
-    {
-      'id': '4',
-      'orderNo': 'AT004',
-      'date': DateTime.now(),
-      'status': 'pending',
-      'total': 55.25,
-      'items': ['Wedding Cake x1', 'Cupcake Set x6'],
-      'deliveryAddress': '321 Cake Lane, Harare, Zimbabwe',
-      'deliveryTime': '4:00 PM',
-    },
-  ];
 
   @override
   void initState() {
@@ -104,11 +59,13 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     super.dispose();
   }
 
-  List<Map<String, dynamic>> get _filteredOrders {
-    if (_selectedFilter == 'all') return _mockOrders;
-    return _mockOrders
-        .where((order) => order['status'] == _selectedFilter)
-        .toList();
+  List<Order> get _filteredOrders {
+    final orders = ref.watch(
+      userOrdersProvider(ref.watch(authProvider).user?.userId ?? ''),
+    );
+
+    if (_selectedFilter == 'all') return orders;
+    return orders.where((order) => order.status == _selectedFilter).toList();
   }
 
   void _onFilterChanged(String filter) {
@@ -117,7 +74,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     });
   }
 
-  void _onOrderTap(Map<String, dynamic> order) {
+  void _onOrderTap(Order order) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => OrderDetailScreen(order: order)),
@@ -129,18 +86,63 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
       _isRefreshing = true;
     });
 
-    // Simulate refresh delay
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      // Refresh orders by invalidating the provider
+      ref.invalidate(
+        userOrdersProvider(ref.read(authProvider).user?.userId ?? ''),
+      );
 
-    setState(() {
-      _isRefreshing = false;
-    });
+      await Future.delayed(const Duration(milliseconds: 500));
+      ToastManager.showSuccess(context, 'Orders refreshed!');
+    } catch (e) {
+      ToastManager.showError(context, 'Failed to refresh orders');
+    } finally {
+      setState(() {
+        _isRefreshing = false;
+      });
+    }
+  }
 
-    ToastManager.showSuccess(context, 'Orders refreshed!');
+  String _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return '#FFA726'; // Orange
+      case 'in transit':
+        return '#42A5F5'; // Blue
+      case 'delivered':
+        return '#66BB6A'; // Green
+      case 'cancelled':
+        return '#EF5350'; // Red
+      default:
+        return '#9E9E9E'; // Grey
+    }
+  }
+
+  String _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'assets/animations/loading.json';
+      case 'in transit':
+        return 'assets/animations/Delivery.json';
+      case 'delivered':
+        return 'assets/animations/celebrate Confetti.json';
+      case 'cancelled':
+        return 'assets/animations/empty.json';
+      default:
+        return 'assets/animations/loading.json';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading =
+        ref
+            .watch(
+              userOrdersProvider(ref.watch(authProvider).user?.userId ?? ''),
+            )
+            .isEmpty &&
+        ref.watch(authProvider).isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -154,7 +156,9 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
 
             // Content
             Expanded(
-              child: _filteredOrders.isEmpty
+              child: isLoading
+                  ? _buildLoadingState()
+                  : _filteredOrders.isEmpty
                   ? _buildEmptyState()
                   : _buildOrderList(),
             ),
@@ -458,6 +462,29 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     );
   }
 
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Lottie.asset(
+            'assets/animations/loading.json',
+            width: 120,
+            height: 120,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Loading your orders...',
+            style: AppTheme.elegantBodyStyle.copyWith(
+              fontSize: 16,
+              color: AppColors.secondary.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildOrderList() {
     return SlideTransition(
       position: _slideAnimation,
@@ -475,32 +502,26 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     );
   }
 
-  Widget _buildOrderCard(Map<String, dynamic> order) {
-    final statusColor = _getStatusColor(order['status']);
-    final statusIcon = _getStatusIcon(order['status']);
-    final statusText = _getStatusText(order['status']);
+  Widget _buildOrderCard(Order order) {
+    final statusColor = _getStatusColor(order.status);
+    final statusText = _getStatusText(order.status);
 
     return GestureDetector(
       onTap: () => _onOrderTap(order),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.surface, AppColors.surface.withOpacity(0.95)],
-          ),
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppColors.primary.withOpacity(0.2),
-            width: 1.5,
+            color: AppColors.primary.withOpacity(0.1),
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
               color: AppColors.primary.withOpacity(0.08),
               blurRadius: 15,
-              offset: const Offset(0, 8),
-              spreadRadius: 2,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
@@ -509,15 +530,16 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header row
+              // Header with order number and date
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Order #${order['orderNo']}',
+                          'Order #${order.orderNumber ?? order.id.substring(0, 8)}',
                           style: AppTheme.elegantBodyStyle.copyWith(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -526,7 +548,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${_formatDate(order['date'])} • ${order['deliveryTime']}',
+                          '${_formatDate(order.createdAt)} • ${order.deliveryTime != null ? _formatTime(order.deliveryTime!) : 'Not specified'}',
                           style: AppTheme.elegantBodyStyle.copyWith(
                             fontSize: 14,
                             color: AppColors.secondary.withOpacity(0.7),
@@ -535,35 +557,43 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                       ],
                     ),
                   ),
+                  // Status indicator
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
-                      vertical: 8,
+                      vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          statusColor.withOpacity(0.2),
-                          statusColor.withOpacity(0.1),
-                        ],
-                      ),
+                      color: Color(
+                        int.parse(statusColor.replaceAll('#', '0xFF')),
+                      ).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: statusColor.withOpacity(0.3),
+                        color: Color(
+                          int.parse(statusColor.replaceAll('#', '0xFF')),
+                        ).withOpacity(0.3),
                         width: 1,
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(statusIcon, color: statusColor, size: 16),
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: Color(
+                            int.parse(statusColor.replaceAll('#', '0xFF')),
+                          ),
+                          size: 16,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           statusText,
                           style: AppTheme.elegantBodyStyle.copyWith(
                             fontSize: 12,
-                            color: statusColor,
                             fontWeight: FontWeight.w600,
+                            color: Color(
+                              int.parse(statusColor.replaceAll('#', '0xFF')),
+                            ),
                           ),
                         ),
                       ],
@@ -571,139 +601,68 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
                   ),
                 ],
               ),
-
               const SizedBox(height: 16),
-
-              // Order items preview
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.cardColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.cardColor.withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Items:',
-                      style: AppTheme.elegantBodyStyle.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.secondary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ...(order['items'] as List<String>)
-                        .take(3)
-                        .map(
-                          (item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.circle,
-                                  size: 6,
-                                  color: AppColors.secondary.withOpacity(0.5),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    item,
-                                    style: AppTheme.elegantBodyStyle.copyWith(
-                                      fontSize: 13,
-                                      color: AppColors.secondary.withOpacity(
-                                        0.8,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+              // Items preview
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ...order.items
+                      .take(3)
+                      .map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(
+                            '• ${item.productName} x${item.quantity}',
+                            style: AppTheme.elegantBodyStyle.copyWith(
+                              fontSize: 14,
+                              color: AppColors.secondary.withOpacity(0.8),
                             ),
                           ),
                         ),
-                    if ((order['items'] as List<String>).length > 3)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          '+${(order['items'] as List<String>).length - 3} more items',
-                          style: AppTheme.elegantBodyStyle.copyWith(
-                            fontSize: 12,
-                            color: AppColors.primary,
-                            fontStyle: FontStyle.italic,
-                          ),
+                      )
+                      .toList(),
+                  if (order.items.length > 3)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        '+${order.items.length - 3} more items',
+                        style: AppTheme.elegantBodyStyle.copyWith(
+                          fontSize: 12,
+                          color: AppColors.secondary.withOpacity(0.6),
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
-
               const SizedBox(height: 16),
-
-              // Footer row
+              // Footer with total and delivery address
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Total',
-                          style: AppTheme.elegantBodyStyle.copyWith(
-                            fontSize: 14,
-                            color: AppColors.secondary.withOpacity(0.7),
+                        if (order.deliveryAddress != null)
+                          Text(
+                            order.deliveryAddress!,
+                            style: AppTheme.elegantBodyStyle.copyWith(
+                              fontSize: 12,
+                              color: AppColors.secondary.withOpacity(0.6),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        Text(
-                          '\$${order['total'].toStringAsFixed(2)}',
-                          style: AppTheme.girlishHeadingStyle.copyWith(
-                            fontSize: 20,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.primary.withOpacity(0.2),
-                          AppColors.accent.withOpacity(0.1),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: AppColors.primary.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'View Details',
-                          style: AppTheme.elegantBodyStyle.copyWith(
-                            fontSize: 14,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(
-                          Icons.arrow_forward_rounded,
-                          color: AppColors.primary,
-                          size: 16,
-                        ),
-                      ],
+                  Text(
+                    '\$${order.finalTotal.toStringAsFixed(2)}',
+                    style: AppTheme.girlishHeadingStyle.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
                     ),
                   ),
                 ],
@@ -715,63 +674,26 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen>
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return Colors.green;
-      case 'in transit':
-        return Colors.orange;
-      case 'cancelled':
-        return Colors.red;
-      case 'pending':
-        return AppColors.primary;
-      default:
-        return AppColors.primary;
-    }
-  }
-
-  IconData _getStatusIcon(String status) {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return Icons.check_circle_rounded;
-      case 'in transit':
-        return Icons.local_shipping_rounded;
-      case 'cancelled':
-        return Icons.cancel_rounded;
-      case 'pending':
-        return Icons.schedule_rounded;
-      default:
-        return Icons.receipt_long_rounded;
-    }
-  }
-
   String _getStatusText(String status) {
     switch (status.toLowerCase()) {
       case 'delivered':
         return 'Delivered';
       case 'in transit':
-        return 'On the way';
+        return 'In Transit';
       case 'cancelled':
         return 'Cancelled';
       case 'pending':
-        return 'Preparing';
+        return 'Pending';
       default:
         return status;
     }
   }
 
   String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date).inDays;
+    return '${date.day}/${date.month}/${date.year}';
+  }
 
-    if (difference == 0) {
-      return 'Today';
-    } else if (difference == 1) {
-      return 'Yesterday';
-    } else if (difference < 7) {
-      return '$difference days ago';
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
-    }
+  String _formatTime(DateTime time) {
+    return '${time.hour}:${time.minute.toString().padLeft(2, '0')}';
   }
 }
