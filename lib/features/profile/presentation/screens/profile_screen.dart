@@ -7,6 +7,9 @@ import '../../../auth/presentation/screens/logout_button.dart';
 import 'edit_profile_screen.dart';
 import 'address_management_screen.dart';
 import 'notification_settings_screen.dart';
+import 'privacy_security_screen.dart';
+import 'help_support_screen.dart';
+import 'about_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -235,7 +238,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       title: 'Privacy & Security',
                       subtitle: 'Manage your account security',
                       onTap: () {
-                        // TODO: Navigate to privacy settings
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const PrivacySecurityScreen(),
+                          ),
+                        );
                       },
                     ),
                     _buildProfileOption(
@@ -243,7 +250,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       title: 'Help & Support',
                       subtitle: 'Get help and contact support',
                       onTap: () {
-                        // TODO: Navigate to help section
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const HelpSupportScreen(),
+                          ),
+                        );
                       },
                     ),
                     _buildProfileOption(
@@ -251,7 +262,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       title: 'About',
                       subtitle: 'Learn more about Ashley\'s Treats',
                       onTap: () {
-                        // TODO: Navigate to about section
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const AboutScreen(),
+                          ),
+                        );
                       },
                     ),
                   ],
@@ -274,7 +289,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ),
       ),
     );
-  )
   }
 
   Widget _buildQuickStat(String label, String value, IconData icon) {
